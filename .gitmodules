@@ -1,0 +1,3 @@
+[submodule "data/russian-troll-tweets"]
+	path = data/russian-troll-tweets
+	url = https://github.com/fivethirtyeight/russian-troll-tweets/
