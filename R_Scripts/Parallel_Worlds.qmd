@@ -8,7 +8,7 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(RColorBrewer)
-library(forcats)
+library(ggthemes)
 #| echo: false
 ```
 
@@ -53,8 +53,11 @@ Lang_Plot <- Test %>%
   arrange(desc(count))%>%
   slice(1:6)%>%
   ungroup() %>%
-  ggplot(aes(language,log(count)))+
-  geom_bar(stat = "identity")
+  ggplot(aes(reorder(language, count),log(count)))+
+  geom_bar(stat = "identity",fill = "darkblue")+
+  coord_flip()+
+  theme_bw()+
+  labs(x = "Language", y = "Tweets (Log)", title = "Most Significant Languages")
 
 Region_Plot <-  Test %>% 
   group_by(region) %>%
@@ -62,9 +65,14 @@ Region_Plot <-  Test %>%
   arrange(desc(count))%>%
   slice(1:6)%>%
   ungroup() %>%
-  ggplot(aes(region,log(count)))+
-  geom_bar(stat = "identity")
+  ggplot(aes(reorder(region, count),log(count)))+
+  geom_bar(stat = "identity", fill = "darkred")+
+  coord_flip()+
+  theme_bw()+
+  labs(x = "Region", y = "Tweets (Log)", title = "Most Significant Regions")
 
+Lang_Plot
+Region_Plot
 
 
 
@@ -74,5 +82,3 @@ Region_Plot <-  Test %>%
 
 
 ```
-
-The `echo: false` option disables the printing of code (only output is displayed).
