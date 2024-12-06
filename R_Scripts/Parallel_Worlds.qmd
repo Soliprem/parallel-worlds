@@ -11,25 +11,27 @@ library(paletteer)
 library(ggthemes)
 library(knitr)
 library(psych)
+library(readr)
+library(ggpmisc)
 #| echo: false
 ```
 
 ```{r}
 #importing, merging and cleaning
 
-IRAtweets1 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_1.csv")
-IRAtweets2 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_2.csv")
-IRAtweets3 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_3.csv")
-IRAtweets4 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_4.csv")
-IRAtweets5 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_5.csv")
-IRAtweets6 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_6.csv")
-IRAtweets7 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_7.csv")
-IRAtweets8 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_8.csv")
-IRAtweets9 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_9.csv")
-IRAtweets10 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_10.csv")
-IRAtweets11 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_11.csv")
-IRAtweets12 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_12.csv")
-IRAtweets13 <- read.csv("C:/Users/hawkm/OneDrive/Desktop/R Projects/Big Data in Social Sciences/AstroTurfing/Data/IRAhandle_tweets_13.csv")
+IRAtweets1 <- read_csv("Data/IRAhandle_tweets_1.csv")
+IRAtweets2 <- read_csv("Data/IRAhandle_tweets_2.csv")
+IRAtweets3 <- read_csv("Data/IRAhandle_tweets_3.csv")
+IRAtweets4 <- read_csv("Data/IRAhandle_tweets_4.csv")
+IRAtweets5 <- read_csv("Data/IRAhandle_tweets_5.csv")
+IRAtweets6 <- read_csv("Data/IRAhandle_tweets_6.csv")
+IRAtweets7 <- read_csv("Data/IRAhandle_tweets_7.csv")
+IRAtweets8 <- read_csv("Data/IRAhandle_tweets_8.csv")
+IRAtweets9 <- read_csv("Data/IRAhandle_tweets_9.csv")
+IRAtweets10 <- read_csv("Data/IRAhandle_tweets_10.csv")
+IRAtweets11 <- read_csv("Data/IRAhandle_tweets_11.csv")
+IRAtweets12 <- read_csv("Data/IRAhandle_tweets_12.csv")
+IRAtweets13 <- read_csv("Data/IRAhandle_tweets_13.csv")
 
 df_list <- list(IRAtweets1,IRAtweets2,IRAtweets3,IRAtweets4,IRAtweets5,IRAtweets6,IRAtweets7,IRAtweets8,IRAtweets9,IRAtweets10,IRAtweets11,IRAtweets12,IRAtweets13)
 
@@ -43,6 +45,8 @@ kable(head(IRAtweets))
 
 ```{r}
 IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis
+
+#descriptive stuff
 
 mean_imp <- IRAtweets %>%
   select(c(author,updates,region,language)) %>% 
@@ -101,10 +105,6 @@ Meanimp_P <- mean_imp %>%
   theme_bw()+
   labs(x = "Average impressions",y = "", title = "Average Tweet Impressions in significant regions") 
 
-Lang_P
-Region_P
-Acctype_P
-Meanimp_P
 
 describe(IRAtweets$followers)
 describe(IRAtweets$following)
@@ -133,7 +133,40 @@ Regionacctype_P <- IRAtweets %>%
 
 Regionacctype_P
 
-#hypothertical time posted density plot
+#hypothertical time density plot
+
+Timeseries_P <- IRAtweets %>% 
+  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
+  group_by(timedates) %>%
+  add_count(timedates)%>%
+  filter(timedates > "2015-01-01" & timedates < "2018-01-01") %>% #basically no tweets before
+  ggplot( aes(timedates,n))+
+  geom_line(color = "#DB3EB1FF")+
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
+  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
+  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
+  labs(x = "Time",y = "Tweets", title = "Tweets over time")+
+  theme_bw()
+
+Lang_P
+Region_P
+Acctype_P
+Meanimp_P
+#Timeseries_P #WARNING, TAKES LOTS OF TIME TO PLOT
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```
