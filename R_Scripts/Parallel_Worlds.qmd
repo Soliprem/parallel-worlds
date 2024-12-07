@@ -41,9 +41,8 @@ IRAtweets <- do.call("rbind", df_list)
 IRAtweets <- subset(IRAtweets, select=c(-external_author_id,-harvested_date,-new_june_2018,-alt_external_id,-tweet_id,-article_url,-tco1_step1,-tco2_step1,-tco3_step1))
 
 set.seed(777)
-IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis
-
-
+IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis 
+#WARNING, THE ANALYSIS THROUGH THE FULL DATASET CAN BE QUITE TASKING ON THE COMPUTER IT'S BEING RUN ON AND TAKES LOTS OF TIME TO ACTUALLY COMPUTE, THE VIEWING OF THE ANALYSIS VIA THE SAMPLE IS RECOMMENDED
 
 head(IRAtweets)
 
@@ -217,7 +216,7 @@ Region_P
 Acctype_P
 Meanimp_P
 Regionacctype_P
-Timeseries_P #WARNING, FULL SAMPLE TIME SERIES PLOT TAKES LOTS OF TIME TO COMPUTE
+# Timeseries_P #WARNING, FULL SAMPLE TIME SERIES PLOT TAKES LOTS OF TIME TO COMPUTE
 
 grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```
@@ -235,7 +234,8 @@ Tweets_unnested <- IRAtweets %>%
          !word == "http",
          !word == "https",
          !word == "rt") %>%
-  mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))
+  mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) %>%
+  filter(!word == "")
 
 Tweets_unnested %>%
   count(word, sort = T)
@@ -302,7 +302,8 @@ AccCat_nrc <- nrc_tweets %>%
   facet_wrap(~account_category, ncol = 2)+
   theme_bw()+
   labs(x = "Sentiments",y = "tweets ", title = "Sentiments in tweets by account category")+
-  scale_fill_paletteer_d("rcartocolor::Temps")
+  scale_fill_paletteer_d("rcartocolor::Temps")+
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 AccCat_nrc_scaled <- nrc_tweets %>%
   filter(!sentiment == "positive",
@@ -318,9 +319,11 @@ AccCat_nrc_scaled <- nrc_tweets %>%
   facet_wrap(~account_category, ncol = 2)+
    theme_bw()+
   labs(x = "Sentiments",y = "tweets ", title = "Sentiments in tweets by account category")+
-  scale_fill_paletteer_d("rcartocolor::Temps")
+  scale_fill_paletteer_d("rcartocolor::Temps")+
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-AccCat_nrc_scaled
 gen_nrc
+AccCat_nrc_scaled
+
 
 ```
