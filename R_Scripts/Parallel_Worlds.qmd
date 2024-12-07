@@ -14,7 +14,7 @@ library(psych)
 library(readr)
 library(ggpmisc)
 library(tidytext)
-library(caret)
+library(gridExtra)
 #| echo: false
 ```
 
@@ -51,8 +51,6 @@ head(IRAtweets)
 ```
 
 ```{r}
-
-
 #descriptive stuff
 
 mean_imp <- IRAtweets %>%
@@ -138,9 +136,6 @@ Regionacctype_P <- IRAtweets %>%
   theme(axis.text.x = element_text(angle = 90))+
   labs(x = "Account Categories",y = "Accounts", title = "Account categories in significant regions")
 
-Regionacctype_P
-
-#hypothertical time density plot
 
 Timeseries_P <- IRAtweets %>% 
   mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
@@ -156,15 +151,79 @@ Timeseries_P <- IRAtweets %>%
   labs(x = "Time",y = "Tweets", title = "Tweets over time")+
   theme_bw()
 
+
+tweets_1y <- IRAtweets %>% #focusing on election year
+  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
+  group_by(timedates) %>%
+  add_count(timedates)%>%
+  filter(timedates > "2016-01-01" & timedates < "2017-01-01") %>% 
+  ggplot( aes(timedates,n))+
+  geom_line(color = "#DB3EB1FF")+
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
+  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
+  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
+  labs(x = "Time",y = "Tweets", title = "Tweets over time")+
+  theme_bw()+
+  geom_smooth(method = "lm", color = "#1BB6AFFF")
+
+tweets_1y <- IRAtweets %>% #focusing on election year
+  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
+  group_by(timedates) %>%
+  add_count(timedates)%>%
+  filter(timedates > "2016-01-01" & timedates < "2017-01-01") %>% 
+  ggplot( aes(timedates,n))+
+  geom_line(color = "#DB3EB1FF")+
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
+  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
+  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
+  labs(x = "Time",y = "Tweets", title = "Tweets 2016-2017")+
+  theme_bw()+
+  geom_smooth(method = "lm", color = "#1BB6AFFF")
+
+tweets_before <- IRAtweets %>% 
+  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
+  group_by(timedates) %>%
+  add_count(timedates)%>%
+  filter(timedates > "2016-08-01" & timedates < "2016-11-10") %>% 
+  ggplot( aes(timedates,n))+
+  geom_line(color = "#DB3EB1FF")+
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
+  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
+  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
+  labs(x = "Time",y = "Tweets", title = "Tweets before elections")+
+  theme_bw()+
+  geom_smooth(method = "lm", color = "#1BB6AFFF")
+
+tweets_after <- IRAtweets %>% #focusing on election year
+  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
+  group_by(timedates) %>%
+  add_count(timedates)%>%
+  filter(timedates > "2016-10-01" & timedates < "2016-12-01") %>% 
+  ggplot( aes(timedates,n))+
+  geom_line(color = "#DB3EB1FF")+
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
+  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
+  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
+  labs(x = "Time",y = "Tweets", title = "Tweets right after elections")+
+  theme_bw()+
+  geom_smooth(method = "lm", color = "#1BB6AFFF")
+
 Lang_P
 Region_P
 Acctype_P
 Meanimp_P
-#Timeseries_P #WARNING, TAKES LOTS OF TIME TO PLOT
+Regionacctype_P
+Timeseries_P #WARNING, FULL SAMPLE TIME SERIES PLOT TAKES LOTS OF TIME TO COMPUTE
+
+grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```
 
 ```{r}
-#sentiment analys
+#text mining
 data("stop_words")
 
 Tweets_unnested <- IRAtweets %>%
@@ -175,10 +234,42 @@ Tweets_unnested <- IRAtweets %>%
   filter(!word == "t.co",
          !word == "http",
          !word == "https",
-         !word == "rt")
+         !word == "rt") %>%
+  mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))
 
 Tweets_unnested %>%
-  count(word, sort = TRUE)
+  count(word, sort = T)
+
+Tweets_unnested%>%
+  group_by(account_category)%>%
+  select(word, account_category)%>%
+  count(word, sort = T)%>%
+  pivot_wider(names_from = account_category, values_from = n)
+
+
+tweet_words <- Tweets_unnested%>%
+  count(account_category, word, sort = T)
+
+tot_words <- tweet_words %>%
+  group_by(account_category)%>%
+  summarise(tot = sum(n))
+
+tweet_words<- left_join(tweet_words, tot_words) %>%
+  mutate(percent_freq = (n/tot)*100) %>%
+  ungroup() %>%
+  filter(!word == "")
+
+head(tweet_words)
+
+```
+
+```{r}
+
+#sentiment analysis
+
+tweet_words %>%
+  filter(!word == "trump")%>% #Trump (president) is interpreted as trump (surprise)
+  inner_join(get_sentiments("nrc"), relationship = "many-to-many")
 
 nrc_tweets <- Tweets_unnested %>%
   inner_join(get_sentiments("nrc"), relationship = "many-to-many")
@@ -188,7 +279,10 @@ bing_tweets <- Tweets_unnested %>%
 
 gen_nrc <- nrc_tweets %>%
   filter(!sentiment == "positive",
-         !sentiment == "negative")%>%
+         !word == "trump",
+         !sentiment == "negative",
+         !account_category == "NonEnglish",
+         !account_category == "Unknown")%>%
   count(sentiment) %>%
   ggplot(aes(sentiment,n))+
   geom_bar(stat = "identity", fill = "#8785B2FF")+ scale_fill_paletteer_d("nbapalettes::bucks_city2")+
@@ -199,7 +293,8 @@ AccCat_nrc <- nrc_tweets %>%
   filter(!sentiment == "positive",
          !sentiment == "negative",
          !account_category == "NonEnglish",
-         !account_category == "Unknown") %>%
+         !account_category == "Unknown",
+         !word == "trump",) %>%
   group_by(account_category)%>%
   count(sentiment) %>%
   ggplot(aes(sentiment,n))+
@@ -213,7 +308,8 @@ AccCat_nrc_scaled <- nrc_tweets %>%
   filter(!sentiment == "positive",
          !sentiment == "negative",
          !account_category == "NonEnglish",
-         !account_category == "Unknown") %>%
+         !account_category == "Unknown",
+         !word == "trump",) %>%
   group_by(account_category)%>%
   count(sentiment) %>%
   mutate(n = scale(n,center=min(n),scale=diff(range(n))))%>%
@@ -223,6 +319,8 @@ AccCat_nrc_scaled <- nrc_tweets %>%
    theme_bw()+
   labs(x = "Sentiments",y = "tweets ", title = "Sentiments in tweets by account category")+
   scale_fill_paletteer_d("rcartocolor::Temps")
-  
+
+AccCat_nrc_scaled
+gen_nrc
 
 ```
