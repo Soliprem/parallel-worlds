@@ -222,7 +222,7 @@ grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```
 
 ```{r}
-#text mining
+#text analysis
 data("stop_words")
 
 Tweets_unnested <- IRAtweets %>%
@@ -258,13 +258,45 @@ tweet_words<- left_join(tweet_words, tot_words) %>%
   mutate(percent_freq = (n/tot)*100) %>%
   ungroup() %>%
   filter(!word == "")
-
 head(tweet_words)
+
+tweet_tf_idf <- tweet_words %>% 
+  bind_tf_idf(word, account_category,n)
+ #finding important words by decreasing weight in common used words and increasing it for not-so used ones
+# tf-idf measures how important a term is within the text that adjusts for the fact that some words may appear more commonly than others
+# thus tf = term frequency, so idf / tf-idf = 0 for extremely common words, and increasing for the rarity of the terms
+
+tweet_tf_idf %>%
+  filter(!account_category == "NonEnglish",
+         !account_category == "Unknown",
+         !account_category == "HashtagGamer", #just returned random hashtags
+         !account_category == "Commercial")%>% #just returned ads
+  select(-tot)%>%
+  arrange(desc(tf_idf))
+
+tweet_tf_idf %>%
+  filter(!account_category == "NonEnglish",
+         !account_category == "Unknown",
+         !account_category == "HashtagGamer", #just returned random hashtags
+         !account_category == "Commercial")%>% #returned ads
+  group_by(account_category)%>%
+  slice_max(tf_idf, n = 10) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(word,tf_idf), fill = account_category))+
+  geom_col(show.legend = F)+
+  facet_wrap(~account_category, ncol = 2, scales = "free")+
+  theme_bw()+
+  labs(x = "tf-idf",
+       y = NULL,
+       title = "High tf-idf words by account groups")+
+  paletteer::scale_fill_paletteer_d("nbapalettes::lakers_city")
+  
+  
+
 
 ```
 
 ```{r}
-
 #sentiment analysis
 
 tweet_words %>%
@@ -272,17 +304,28 @@ tweet_words %>%
   inner_join(get_sentiments("nrc"), relationship = "many-to-many")
 
 nrc_tweets <- Tweets_unnested %>%
-  inner_join(get_sentiments("nrc"), relationship = "many-to-many")
-
-bing_tweets <- Tweets_unnested %>%
-  inner_join(get_sentiments("bing"), relationship = "many-to-many")
-
-gen_nrc <- nrc_tweets %>%
+  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
   filter(!sentiment == "positive",
-         !word == "trump",
          !sentiment == "negative",
          !account_category == "NonEnglish",
-         !account_category == "Unknown")%>%
+         !account_category == "Unknown",
+         !word == "trump",)%>%
+  mutate(method = "NRC")
+
+nrc_posneg <-  Tweets_unnested %>%
+  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
+  filter(sentiment == "positive" | sentiment == "negative")%>%
+  mutate(method = "NRC")
+
+bing_tweets <- Tweets_unnested %>%
+  inner_join(get_sentiments("bing"), relationship = "many-to-many")%>%
+   filter(!account_category == "NonEnglish",
+         !account_category == "Unknown",
+         !word == "trump",
+         !word == "breaking")%>%
+  mutate(method = "Bing")
+
+nrc_tweets %>%
   count(sentiment) %>%
   ggplot(aes(sentiment,n))+
   geom_bar(stat = "identity", fill = "#8785B2FF")+ scale_fill_paletteer_d("nbapalettes::bucks_city2")+
@@ -290,11 +333,6 @@ gen_nrc <- nrc_tweets %>%
   labs(x = "Sentiments",y = "tweets ", title = "Overall Sentiments in tweets")
 
 AccCat_nrc <- nrc_tweets %>%
-  filter(!sentiment == "positive",
-         !sentiment == "negative",
-         !account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",) %>%
   group_by(account_category)%>%
   count(sentiment) %>%
   ggplot(aes(sentiment,n))+
@@ -305,12 +343,7 @@ AccCat_nrc <- nrc_tweets %>%
   scale_fill_paletteer_d("rcartocolor::Temps")+
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-AccCat_nrc_scaled <- nrc_tweets %>%
-  filter(!sentiment == "positive",
-         !sentiment == "negative",
-         !account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",) %>%
+nrc_tweets %>%
   group_by(account_category)%>%
   count(sentiment) %>%
   mutate(n = scale(n,center=min(n),scale=diff(range(n))))%>%
@@ -318,12 +351,91 @@ AccCat_nrc_scaled <- nrc_tweets %>%
   geom_bar(stat = "identity",aes(fill = account_category))+
   facet_wrap(~account_category, ncol = 2)+
    theme_bw()+
-  labs(x = "Sentiments",y = "tweets ", title = "Sentiments in tweets by account category")+
+  labs(x = "Sentiments",y = " share", title = "Sentiment share in tweets by account category")+
   scale_fill_paletteer_d("rcartocolor::Temps")+
    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-gen_nrc
-AccCat_nrc_scaled
+bing_tweets %>%
+  count(account_category, score = Tweet_n %/% 100, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0)%>%
+  mutate(sentiment = positive - negative) %>%
+  ggplot(aes(score, sentiment, fill = account_category))+
+  geom_col(show.legend = F)+
+  facet_wrap(~account_category, ncol = 3, scales = "free_y")+
+  theme_bw()+
+  paletteer::scale_fill_paletteer_d("ggprism::colorblind_safe")+
+  labs(x = "Tweets (hundreds)",y = "Score", title = "Positivity / Negativity by hundreds of tweets")
 
+#Comparing the 3 lexicons
+afinn_tweets <- Tweets_unnested %>%
+   filter(!account_category == "NonEnglish",
+         !account_category == "Unknown",
+         !word == "trump",
+         ! word == "breaking") %>%
+  inner_join(get_sentiments("afinn"))%>%
+  group_by(score = Tweet_n %/% 100) %>%
+  summarise(sentiment = sum(value))%>%
+  mutate(method = "AFINN")
+
+bing_nrc_tweets <- bind_rows(bing_tweets ,nrc_posneg)%>%
+  count(method, score = Tweet_n %/% 100, sentiment)%>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0)%>%
+  mutate(sentiment = positive-negative)
+
+ bind_rows(afinn_tweets, bing_nrc_tweets) %>%
+  ggplot(aes(score, sentiment, fill = method))+
+  geom_col(show.legend = F)+
+  facet_wrap(~method, ncol = 1, scales = "free_y" )+
+  paletteer::scale_fill_paletteer_d("ggthemes::excel_Gallery")+
+  theme_bw()+
+   labs(x = "Tweets (hundreds)",y = "Score", title = "Comparing different lexicons")
+
+#NRC is notoriously known as a more positive lexicon than others 
+ get_sentiments("nrc") %>% 
+  filter(sentiment %in% c("positive", "negative")) %>% 
+  count(sentiment)
+ 
+ get_sentiments("bing") %>% 
+  count(sentiment)
+#NRC has a higher ratio of positive words
+ 
+bing_wc <- bing_tweets %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup() %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 12) %>%
+  ungroup %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n,word,fill = sentiment))+
+  geom_col(show.legend = F)+
+  facet_wrap(~sentiment, scales = "free_y")+
+  labs(x = "Word count",
+       title = "Word count by sentiment, Bing Lexicon")+
+  theme_bw()+
+  paletteer::scale_fill_paletteer_d("suffrager::classic")
+  
+bing_wc
+
+nrc_wc <- nrc_posneg %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup() %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 12) %>%
+  ungroup %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n,word,fill = sentiment))+
+  geom_col(show.legend = F)+
+  facet_wrap(~sentiment, scales = "free_y")+
+  labs(x = "Word count",
+       title = "Word count by sentiment, NRC Lexicon")+
+  theme_bw()+
+  paletteer::scale_fill_paletteer_d("nbapalettes::sixers_retro")
+ 
+nrc_wc
+
+
+```
+
+```{r}
 
 ```
