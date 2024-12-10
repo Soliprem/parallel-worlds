@@ -1,7 +1,11 @@
 ---
 title: "Parallel Worlds"
 author: "Francesco Prem Solidoro, Michele Salvi"
-format: pdf
+format:
+  typst:
+    toc: true
+    section-numbering: 1.1.a
+    columns: 1
 editor: visual
 ---
 
@@ -16,26 +20,24 @@ library(ggpmisc)
 library(tidytext)
 library(tm)
 library(gridExtra)
-library(textclean)
-#| echo: false
 ```
 
 ```{r}
 #importing, merging and cleaning
 
-IRAtweets1 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_1.csv")
-IRAtweets2 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_2.csv")
-IRAtweets3 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_3.csv")
-IRAtweets4 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_4.csv")
-IRAtweets5 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_5.csv")
-IRAtweets6 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_6.csv")
-IRAtweets7 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_7.csv")
-IRAtweets8 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_8.csv")
-IRAtweets9 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_9.csv")
-IRAtweets10 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_10.csv")
-IRAtweets11 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_11.csv")
-IRAtweets12 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_12.csv")
-IRAtweets13 <- read_csv("../data/russian-troll-tweets/IRAhandle_tweets_13.csv")
+IRAtweets1 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_1.csv")
+IRAtweets2 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_2.csv")
+IRAtweets3 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_3.csv")
+IRAtweets4 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_4.csv")
+IRAtweets5 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_5.csv")
+IRAtweets6 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_6.csv")
+IRAtweets7 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_7.csv")
+IRAtweets8 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_8.csv")
+IRAtweets9 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_9.csv")
+IRAtweets10 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_10.csv")
+IRAtweets11 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_11.csv")
+IRAtweets12 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_12.csv")
+IRAtweets13 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_13.csv")
 
 df_list <- list(IRAtweets1,IRAtweets2,IRAtweets3,IRAtweets4,IRAtweets5,IRAtweets6,IRAtweets7,IRAtweets8,IRAtweets9,IRAtweets10,IRAtweets11,IRAtweets12,IRAtweets13)
 
@@ -48,7 +50,6 @@ IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for comple
 
 head(IRAtweets)
 
-#| echo: false
 ```
 
 ```{r}
