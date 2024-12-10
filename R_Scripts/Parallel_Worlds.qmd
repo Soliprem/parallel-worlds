@@ -14,7 +14,9 @@ library(psych)
 library(readr)
 library(ggpmisc)
 library(tidytext)
+library(tm)
 library(gridExtra)
+library(textclean)
 #| echo: false
 ```
 
@@ -224,16 +226,15 @@ grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```{r}
 #text analysis
 data("stop_words")
+url <- "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 
 Tweets_unnested <- IRAtweets %>%
   filter(language == "English",)%>%
-  mutate(Tweet_n = row_number())%>%
+  mutate(content = str_remove_all(content, url)) %>%
+  mutate(Tweet_n = row_number(content))%>%
   unnest_tokens(word, content) %>%
   anti_join(stop_words)%>%
-  filter(!word == "t.co",
-         !word == "http",
-         !word == "https",
-         !word == "rt") %>%
+  filter(!word == "rt") %>%
   mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) %>%
   filter(!word == "")
 
@@ -410,11 +411,11 @@ bing_wc <- bing_tweets %>%
   geom_col(show.legend = F)+
   facet_wrap(~sentiment, scales = "free_y")+
   labs(x = "Word count",
+       y = NULL,
        title = "Word count by sentiment, Bing Lexicon")+
   theme_bw()+
   paletteer::scale_fill_paletteer_d("suffrager::classic")
   
-bing_wc
 
 nrc_wc <- nrc_posneg %>%
   count(word, sentiment, sort = TRUE) %>%
@@ -427,15 +428,42 @@ nrc_wc <- nrc_posneg %>%
   geom_col(show.legend = F)+
   facet_wrap(~sentiment, scales = "free_y")+
   labs(x = "Word count",
+       y = NULL,
        title = "Word count by sentiment, NRC Lexicon")+
   theme_bw()+
   paletteer::scale_fill_paletteer_d("nbapalettes::sixers_retro")
  
-nrc_wc
+grid.arrange(bing_wc, nrc_wc)
+
+```
+
+```{r}
+#bigram / trigram tokenization and analysis
 
 
 ```
 
 ```{r}
+#data-term matrix
+
+IRAcast <-Tweets_unnested %>%
+  count(Tweet_n, word) %>%
+  cast_dtm(Tweet_n, word, n)
+
+IRAcast
+
+# Tweet_corpus <- Corpus(VectorSource(as.vector(Englishtweets$content))) %>%
+#   tm_map(content_transformer(removePunctuation)) %>%
+#   tm_map(content_transformer(removeNumbers)) %>%
+#   tm_map(content_transformer(tolower)) %>%
+#   tm_map(content_transformer(stripWhitespace)) %>%
+#   tm_map(content_transformer(stemDocument), language = "english")
+#   
+# Tweet_corpus
+# 
+# DTM_tweets <- DocumentTermMatrix(Tweet_corpus, control = list(wordLengths = c(2, Inf))) 
+
+
+
 
 ```
