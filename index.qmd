@@ -24,11 +24,17 @@ library(ggpmisc)
 library(tidytext)
 library(tm)
 library(gridExtra)
+library(ldatuning)
+library(topicmodels)
+library(SnowballC)
+library(caret)
+library(textclean)
+library(ldatuning)
 ```
 
 ## Importing, merging and cleaning the dataset
 
-We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets). Analysis will be performed using the NRD, bing and afinn lexicons
+We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets). Analysis will be performed using the NRC, Bing and AFINN lexicons
 
 ```{r}
 IRAtweets1 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_1.csv")
@@ -251,14 +257,13 @@ url <- "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-
 
 Tweets_unnested <- IRAtweets %>%
   filter(language == "English",)%>%
-  mutate(content = str_remove_all(content, url)) %>%
   mutate(Tweet_n = row_number(content))%>%
+  mutate(content = replace_url(content))%>%
   unnest_tokens(word, content) %>%
   anti_join(stop_words)%>%
   filter(!word == "rt") %>%
   mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) %>%
-  filter(!word == "")%>%
-  mutate(stem = wordStem(word))
+  filter(!word == "") 
 
 Tweets_unnested %>%
   count(word, sort = T)
@@ -466,19 +471,35 @@ grid.arrange(bing_wc, nrc_wc)
 
 ```{r}
 #data-term matrix
+set.seed(505)
+Tweets_Partition <- createDataPartition(Tweets_unnested$Tweet_n,p=0.8,list=FALSE)
+Tweets_Train <- Tweets_unnested[Tweets_Partition,] #train data, 80%
+Tweets_Test <-  Tweets_unnested[-Tweets_Partition,] #Test data, 20%
 
-IRAcast <-Tweets_unnested %>%
+IRAcast_train <-Tweets_Train %>%
   count(Tweet_n, word) %>%
   cast_dtm(Tweet_n, word, n)
 
-IRAcast
+IRAcast_test <- Tweets_Test %>%
+  count(Tweet_n, word) %>%
+  cast_dtm(Tweet_n, word, n)
 
-IRA_LDA <- LDA(IRAcast, k = 4)
-LDA_tidy <- tidy(IRA_LDA, matrix = "beta")
+#find the correct number of topics
+updog <- FindTopicsNumber(
+  IRAcast_train,
+  topics = seq(from = 2, to = 30, by = 1),
+  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  mc.cores = 2L,
+  verbose = TRUE)
 
-LDA_tidy
+FindTopicsNumber_plot(updog)
 
-IRAterms <- LDA_tidy %>%
+IRA_trainLDA <- LDA(IRAcast_train, k = 4, method = "Gibbs") #"k = " for topics
+trainLDA_tidy <- tidy(IRA_LDA, matrix = "beta")
+
+
+IRAterms_train <- trainLDA_tidy %>%
   group_by(topic)%>%
   slice_max(beta, n = 10) %>%
   ungroup() %>%
@@ -496,22 +517,6 @@ IRAterms %>%
        title = "Highest probability words by topic")+
   paletteer::scale_fill_paletteer_d("werpals::pan")
 
-
-# Englishtweets <- IRAtweets %>%
-#   filter(language == "English") 
-#
-# Tweet_corpus <- Corpus(VectorSource(as.vector(Englishtweets$content))) %>%
-#   tm_map(content_transformer(removePunctuation)) %>%
-#   tm_map(content_transformer(removeNumbers)) %>%
-#   tm_map(content_transformer(tolower)) %>%
-#   tm_map(content_transformer(stripWhitespace)) %>%
-#   tm_map(content_transformer(stemDocument), language = "english")
-#   
-# Tweet_corpus
-# 
-# DTM_tweets <- DocumentTermMatrix(Tweet_corpus, control = list(wordLengths = c(2, Inf))) 
-
-
-
-  
+perplexity(IRA_trainLDA, IRAcast_train, estimate_theta = F)
+perplexity(IRA_trainLDA, IRAcast_test, estimate_theta = T )
 ```
