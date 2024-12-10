@@ -71,10 +71,7 @@ Since the analysis is quite taxing, we're going to sample 100.000 tweets to perf
 
 ```{r}
 IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis 
-head(IRAtweets)
 ```
-
-
 
 ```{r}
 #descriptive stuff
@@ -131,7 +128,6 @@ Meanimp_P <- mean_imp %>%
   ggplot(aes(mean_Impressions))+
   geom_histogram(aes(fill = region))+
   geom_vline(aes(xintercept=totimp_mean))+
-  # annotate("text", x=totimp_mean+3000, y=20000, label="Average ", angle = 90)+
   scale_fill_paletteer_d("nbapalettes::bucks_city2")+
   theme_bw()+
   labs(x = "Average impressions",y = "", title = "Average Tweet Impressions in significant regions") 
@@ -261,7 +257,8 @@ Tweets_unnested <- IRAtweets %>%
   anti_join(stop_words)%>%
   filter(!word == "rt") %>%
   mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) %>%
-  filter(!word == "")
+  filter(!word == "")%>%
+  mutate(stem = wordStem(word))
 
 Tweets_unnested %>%
   count(word, sort = T)
@@ -317,13 +314,12 @@ tweet_tf_idf %>%
        title = "High tf-idf words by account groups")+
   paletteer::scale_fill_paletteer_d("nbapalettes::lakers_city")
   
-  
-
 
 ```
 
 ```{r}
 #sentiment analysis
+
 
 tweet_words %>%
   filter(!word == "trump")%>% #Trump (president) is interpreted as trump (surprise)
@@ -477,6 +473,33 @@ IRAcast <-Tweets_unnested %>%
 
 IRAcast
 
+IRA_LDA <- LDA(IRAcast, k = 4)
+LDA_tidy <- tidy(IRA_LDA, matrix = "beta")
+
+LDA_tidy
+
+IRAterms <- LDA_tidy %>%
+  group_by(topic)%>%
+  slice_max(beta, n = 10) %>%
+  ungroup() %>%
+  arrange(topic, beta)
+
+IRAterms %>%
+  mutate(term = reorder_within(term, beta, topic))%>%
+  ggplot(aes(beta, term, fill = factor(topic)))+
+  geom_col(show.legend = F)+
+  facet_wrap(~topic, scales = "free_y")+
+  scale_y_reordered()+
+   theme_bw()+
+  labs(x = "Probability",
+       y = "Word",
+       title = "Highest probability words by topic")+
+  paletteer::scale_fill_paletteer_d("werpals::pan")
+
+
+# Englishtweets <- IRAtweets %>%
+#   filter(language == "English") 
+#
 # Tweet_corpus <- Corpus(VectorSource(as.vector(Englishtweets$content))) %>%
 #   tm_map(content_transformer(removePunctuation)) %>%
 #   tm_map(content_transformer(removeNumbers)) %>%
@@ -490,5 +513,5 @@ IRAcast
 
 
 
-
+  
 ```
