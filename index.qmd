@@ -1,12 +1,19 @@
 ---
 title: "Parallel Worlds"
 author: "Francesco Prem Solidoro, Michele Salvi"
-format: pdf
+format:
+  typst:
+    toc: true
+    section-numbering: 1.1.a
+    columns: 1
+execute:
+  warning: false
 editor: visual
 ---
 
-```{r}
+# Parallel Worlds - a View of Social Media Manipulation and Polarization
 
+```{r}
 library(tidyverse)
 library(paletteer)
 library(ggthemes)
@@ -17,480 +24,54 @@ library(ggpmisc)
 library(tidytext)
 library(tm)
 library(gridExtra)
-library(textclean)
-library(topicmodels)
-
-#| warning: false
 ```
 
+## Importing, merging and cleaning the dataset
+
+We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets). Analysis will be performed using the NRD, bing and afinn lexicons
+
 ```{r}
-#importing, merging and cleaning
+IRAtweets1 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_1.csv")
+IRAtweets2 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_2.csv")
+IRAtweets3 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_3.csv")
+IRAtweets4 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_4.csv")
+IRAtweets5 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_5.csv")
+IRAtweets6 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_6.csv")
+IRAtweets7 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_7.csv")
+IRAtweets8 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_8.csv")
+IRAtweets9 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_9.csv")
+IRAtweets10 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_10.csv")
+IRAtweets11 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_11.csv")
+IRAtweets12 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_12.csv")
+IRAtweets13 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_13.csv")
 
-IRAtweets1 <- read_csv("Data/IRAhandle_tweets_1.csv")
-IRAtweets2 <- read_csv("Data/IRAhandle_tweets_2.csv")
-IRAtweets3 <- read_csv("Data/IRAhandle_tweets_3.csv")
-IRAtweets4 <- read_csv("Data/IRAhandle_tweets_4.csv")
-IRAtweets5 <- read_csv("Data/IRAhandle_tweets_5.csv")
-IRAtweets6 <- read_csv("Data/IRAhandle_tweets_6.csv")
-IRAtweets7 <- read_csv("Data/IRAhandle_tweets_7.csv")
-IRAtweets8 <- read_csv("Data/IRAhandle_tweets_8.csv")
-IRAtweets9 <- read_csv("Data/IRAhandle_tweets_9.csv")
-IRAtweets10 <- read_csv("Data/IRAhandle_tweets_10.csv")
-IRAtweets11 <- read_csv("Data/IRAhandle_tweets_11.csv")
-IRAtweets12 <- read_csv("Data/IRAhandle_tweets_12.csv")
-IRAtweets13 <- read_csv("Data/IRAhandle_tweets_13.csv")
-
-df_list <- list(IRAtweets1,IRAtweets2,IRAtweets3,IRAtweets4,IRAtweets5,IRAtweets6,IRAtweets7,IRAtweets8,IRAtweets9,IRAtweets10,IRAtweets11,IRAtweets12,IRAtweets13)
+df_list <- list(
+              IRAtweets1,
+              IRAtweets2,
+              IRAtweets3,
+              IRAtweets4,
+              IRAtweets5,
+              IRAtweets6,
+              IRAtweets7,
+              IRAtweets8,
+              IRAtweets9,
+              IRAtweets10,
+              IRAtweets11,
+              IRAtweets12,
+              IRAtweets13
+)
 
 IRAtweets <- do.call("rbind", df_list)
 IRAtweets <- subset(IRAtweets, select=c(-external_author_id,-harvested_date,-new_june_2018,-alt_external_id,-tweet_id,-article_url,-tco1_step1,-tco2_step1,-tco3_step1))
 
-set.seed(3773)
+set.seed(777)
+```
+
+Since the analysis is quite taxing, we're going to sample 100.000 tweets to perform a preliminary analysis on. Remove the first line in the following block in order to conduct an analysis of the full dataset.
+
+```{r}
 IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis 
-#WARNING, THE ANALYSIS THROUGH THE FULL DATASET CAN BE QUITE TASKING ON THE COMPUTER IT'S BEING RUN ON AND TAKES LOTS OF TIME TO ACTUALLY COMPUTE, THE VIEWING OF THE ANALYSIS VIA THE SAMPLE IS RECOMMENDED
-
-#| warning: false
+head(IRAtweets)
 ```
 
-```{r}
-#descriptive stuff
 
-mean_imp <- IRAtweets %>%
-  select(c(author,updates,region,language)) %>% 
-  group_by(author) %>%
-  mutate(mean_Impressions = round(mean(updates),digits = 3)) %>%
-  arrange(desc(mean_Impressions))
-
-Lang_P <- IRAtweets %>% 
-  group_by(language) %>%
-  summarize(count = n())%>% 
-  arrange(desc(count))%>%
-  slice(1:6)%>%
-  ungroup() %>%
-  ggplot(aes(reorder(language, count),count/10000))+
-  geom_bar(stat = "identity",fill = "darkblue")+
-  coord_flip()+
-  theme_bw()+
-  labs(x = "Language", y = "Tweets (tens of thousands)", title = "Most Significant Languages")
-
-Region_P <-  IRAtweets %>% 
-  group_by(region) %>%
-  summarize(count = n())%>% 
-  arrange(desc(count))%>%
-  slice(1:6)%>%
-  ungroup() %>%
-  ggplot(aes(reorder(region, count),count/10000))+
-  geom_bar(stat = "identity", fill = "darkred")+
-  coord_flip()+
-  theme_bw()+
-  labs(x = "Region", y = "Tweets (tens of thousands)", title = "Most Significant Regions")
-
-Acctype_P <-  IRAtweets %>% 
-  group_by(account_category) %>%
-  summarize(count = n())%>% 
-  arrange(desc(count))%>%
-  ungroup() %>%
-  ggplot(aes(reorder(account_category, count),count/10000))+
-  geom_bar(stat = "identity", fill = "darkgreen")+
-  coord_flip()+
-  theme_bw()+
-  labs(x = "Account Categories", y = "Tweets (tens of thousands)", title = "Tweet by Account types")
-
-totimp_mean <- mean(mean_imp$mean_Impressions)
-
-Meanimp_P <- mean_imp %>%
-  group_by(region)%>%
-  add_count(region)%>%
-  ungroup() %>%
-  mutate(rank = dense_rank(desc(n)))%>%
-  filter(rank %in% 1:6)%>%
-  ggplot(aes(mean_Impressions))+
-  geom_histogram(aes(fill = region))+
-  geom_vline(aes(xintercept=totimp_mean))+
-  scale_fill_paletteer_d("nbapalettes::bucks_city2")+
-  theme_bw()+
-  labs(x = "Average impressions",y = "", title = "Average Tweet Impressions in significant regions") 
-
-
-describe(IRAtweets$followers)
-describe(IRAtweets$following)
-
-mean(IRAtweets$retweet)
-IRAtweets %>%
-  group_by(account_category) %>%
-  summarize(retweet_rate = mean(retweet)) %>%
-  arrange(desc(retweet_rate))
-
-Regionacctype_P <- IRAtweets %>%
-  group_by(region)%>%
-  add_count(region)%>%
-  ungroup() %>%
-  mutate(rank = dense_rank(desc(n)))%>%
-  filter(rank %in% 1:2)%>%
-  distinct(author, .keep_all = T)%>%
-  group_by(account_category) %>%
-  ggplot(aes(account_category))+
-  geom_bar(fill = "#CE1141FF")+
-  facet_wrap(vars(region))+
-  scale_fill_paletteer_d("nbapalettes::bulls")+
-  theme_bw()+
-  theme(axis.text.x = element_text(angle = 90))+
-  labs(x = "Account Categories",y = "Accounts", title = "Account categories in significant regions")
-
-
-Timeseries_P <- IRAtweets %>% 
-  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
-  group_by(timedates) %>%
-  add_count(timedates)%>%
-  filter(timedates > "2015-01-01" & timedates < "2018-01-01") %>% #basically no tweets before
-  ggplot( aes(timedates,n))+
-  geom_line(color = "#DB3EB1FF")+
-  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
-  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
-  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
-             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
-  labs(x = "Time",y = "Tweets", title = "Tweets over time")+
-  theme_bw()
-
-
-tweets_1y <- IRAtweets %>% #focusing on election year
-  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
-  group_by(timedates) %>%
-  add_count(timedates)%>%
-  filter(timedates > "2016-01-01" & timedates < "2017-01-01") %>% 
-  ggplot( aes(timedates,n))+
-  geom_line(color = "#DB3EB1FF")+
-  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
-  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
-  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
-             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
-  labs(x = "Time",y = "Tweets", title = "Tweets over time")+
-  theme_bw()+
-  geom_smooth(method = "lm", color = "#1BB6AFFF")
-
-tweets_1y <- IRAtweets %>% #focusing on election year
-  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
-  group_by(timedates) %>%
-  add_count(timedates)%>%
-  filter(timedates > "2016-01-01" & timedates < "2017-01-01") %>% 
-  ggplot( aes(timedates,n))+
-  geom_line(color = "#DB3EB1FF")+
-  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
-  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
-  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
-             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
-  labs(x = "Time",y = "Tweets", title = "Tweets 2016-2017")+
-  theme_bw()+
-  geom_smooth(method = "lm", color = "#1BB6AFFF")
-
-tweets_before <- IRAtweets %>% 
-  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
-  group_by(timedates) %>%
-  add_count(timedates)%>%
-  filter(timedates > "2016-08-01" & timedates < "2016-11-10") %>% 
-  ggplot( aes(timedates,n))+
-  geom_line(color = "#DB3EB1FF")+
-  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
-  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
-  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
-             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
-  labs(x = "Time",y = "Tweets", title = "Tweets before elections")+
-  theme_bw()+
-  geom_smooth(method = "lm", color = "#1BB6AFFF")
-
-tweets_after <- IRAtweets %>% #focusing on election year
-  mutate(timedates = as.Date(lubridate::parse_date_time(publish_date,"%m/%d/%Y %h:%M")))%>%
-  group_by(timedates) %>%
-  add_count(timedates)%>%
-  filter(timedates > "2016-10-01" & timedates < "2016-12-01") %>% 
-  ggplot( aes(timedates,n))+
-  geom_line(color = "#DB3EB1FF")+
-  scale_x_date(date_labels = "%Y-%m-%d", date_breaks ="1 year" )+
-  stat_peaks(geom = "point", span = 45, color = "#41B6E6FF", size = 2,ignore_threshold = 0.69) +
-  stat_peaks(geom = "label", span = 45, color = "#41B6E6FF", angle = 0,
-             hjust = -0.1, x.label.fmt = "%Y-%m-%d", ignore_threshold = 0.69)+
-  labs(x = "Time",y = "Tweets", title = "Tweets right after elections")+
-  theme_bw()+
-  geom_smooth(method = "lm", color = "#1BB6AFFF")
-
-Lang_P
-Region_P
-Acctype_P
-Meanimp_P
-Regionacctype_P
-# Timeseries_P #WARNING, FULL SAMPLE TIME SERIES PLOT TAKES LOTS OF TIME TO COMPUTE
-
-grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
-```
-
-```{r}
-#text analysis
-data("stop_words")
-url <- "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
-
-Tweets_unnested <- IRAtweets %>%
-  filter(language == "English",)%>%
-  mutate(content = str_remove_all(content, url)) %>%
-  mutate(Tweet_n = row_number(content))%>%
-  unnest_tokens(word, content) %>%
-  anti_join(stop_words)%>%
-  filter(!word == "rt") %>%
-  mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) %>%
-  filter(!word == "")%>%
-  mutate(stem = wordStem(word))
-
-Tweets_unnested %>%
-  count(word, sort = T)
-
-Tweets_unnested%>%
-  group_by(account_category)%>%
-  select(word, account_category)%>%
-  count(word, sort = T)%>%
-  pivot_wider(names_from = account_category, values_from = n)
-
-
-tweet_words <- Tweets_unnested%>%
-  count(account_category, word, sort = T)
-
-tot_words <- tweet_words %>%
-  group_by(account_category)%>%
-  summarise(tot = sum(n))
-
-tweet_words<- left_join(tweet_words, tot_words) %>%
-  mutate(percent_freq = (n/tot)*100) %>%
-  ungroup() %>%
-  filter(!word == "")
-head(tweet_words)
-
-tweet_tf_idf <- tweet_words %>% 
-  bind_tf_idf(word, account_category,n)
- #finding important words by decreasing weight in common used words and increasing it for not-so used ones
-# tf-idf measures how important a term is within the text that adjusts for the fact that some words may appear more commonly than others
-# thus tf = term frequency, so idf / tf-idf = 0 for extremely common words, and increasing for the rarity of the terms
-
-tweet_tf_idf %>%
-  filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !account_category == "HashtagGamer", #just returned random hashtags
-         !account_category == "Commercial")%>% #just returned ads
-  select(-tot)%>%
-  arrange(desc(tf_idf))
-
-tweet_tf_idf %>%
-  filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !account_category == "HashtagGamer", #just returned random hashtags
-         !account_category == "Commercial")%>% #returned ads
-  group_by(account_category)%>%
-  slice_max(tf_idf, n = 10) %>%
-  ungroup() %>%
-  ggplot(aes(tf_idf, fct_reorder(word,tf_idf), fill = account_category))+
-  geom_col(show.legend = F)+
-  facet_wrap(~account_category, ncol = 2, scales = "free")+
-  theme_bw()+
-  labs(x = "tf-idf",
-       y = NULL,
-       title = "High tf-idf words by account groups")+
-  paletteer::scale_fill_paletteer_d("nbapalettes::lakers_city")
-  
-
-```
-
-```{r}
-#sentiment analysis
-
-
-tweet_words %>%
-  filter(!word == "trump")%>% #Trump (president) is interpreted as trump (surprise)
-  inner_join(get_sentiments("nrc"), relationship = "many-to-many")
-
-nrc_tweets <- Tweets_unnested %>%
-  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
-  filter(!sentiment == "positive",
-         !sentiment == "negative",
-         !account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",)%>%
-  mutate(method = "NRC")
-
-nrc_posneg <-  Tweets_unnested %>%
-  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
-  filter(sentiment == "positive" | sentiment == "negative")%>%
-  mutate(method = "NRC")
-
-bing_tweets <- Tweets_unnested %>%
-  inner_join(get_sentiments("bing"), relationship = "many-to-many")%>%
-   filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",
-         !word == "breaking")%>%
-  mutate(method = "Bing")
-
-nrc_tweets %>%
-  count(sentiment) %>%
-  ggplot(aes(sentiment,n))+
-  geom_bar(stat = "identity", fill = "#8785B2FF")+ scale_fill_paletteer_d("nbapalettes::bucks_city2")+
-  theme_bw()+
-  labs(x = "Sentiments",y = "tweets ", title = "Overall Sentiments in tweets")
-
-AccCat_nrc <- nrc_tweets %>%
-  group_by(account_category)%>%
-  count(sentiment) %>%
-  ggplot(aes(sentiment,n))+
-  geom_bar(stat = "identity",aes(fill = account_category))+
-  facet_wrap(~account_category, ncol = 2)+
-  theme_bw()+
-  labs(x = "Sentiments",y = "tweets ", title = "Sentiments in tweets by account category")+
-  scale_fill_paletteer_d("rcartocolor::Temps")+
-   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-nrc_tweets %>%
-  group_by(account_category)%>%
-  count(sentiment) %>%
-  mutate(n = scale(n,center=min(n),scale=diff(range(n))))%>%
-  ggplot(aes(sentiment,n))+
-  geom_bar(stat = "identity",aes(fill = account_category))+
-  facet_wrap(~account_category, ncol = 2)+
-   theme_bw()+
-  labs(x = "Sentiments",y = " share", title = "Sentiment share in tweets by account category")+
-  scale_fill_paletteer_d("rcartocolor::Temps")+
-   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-bing_tweets %>%
-  count(account_category, score = Tweet_n %/% 100, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0)%>%
-  mutate(sentiment = positive - negative) %>%
-  ggplot(aes(score, sentiment, fill = account_category))+
-  geom_col(show.legend = F)+
-  facet_wrap(~account_category, ncol = 3, scales = "free_y")+
-  theme_bw()+
-  paletteer::scale_fill_paletteer_d("ggprism::colorblind_safe")+
-  labs(x = "Tweets (hundreds)",y = "Score", title = "Positivity / Negativity by hundreds of tweets")
-
-#Comparing the 3 lexicons
-afinn_tweets <- Tweets_unnested %>%
-   filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",
-         ! word == "breaking") %>%
-  inner_join(get_sentiments("afinn"))%>%
-  group_by(score = Tweet_n %/% 100) %>%
-  summarise(sentiment = sum(value))%>%
-  mutate(method = "AFINN")
-
-bing_nrc_tweets <- bind_rows(bing_tweets ,nrc_posneg)%>%
-  count(method, score = Tweet_n %/% 100, sentiment)%>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0)%>%
-  mutate(sentiment = positive-negative)
-
- bind_rows(afinn_tweets, bing_nrc_tweets) %>%
-  ggplot(aes(score, sentiment, fill = method))+
-  geom_col(show.legend = F)+
-  facet_wrap(~method, ncol = 1, scales = "free_y" )+
-  paletteer::scale_fill_paletteer_d("ggthemes::excel_Gallery")+
-  theme_bw()+
-   labs(x = "Tweets (hundreds)",y = "Score", title = "Comparing different lexicons")
-
-#NRC is notoriously known as a more positive lexicon than others 
- get_sentiments("nrc") %>% 
-  filter(sentiment %in% c("positive", "negative")) %>% 
-  count(sentiment)
- 
- get_sentiments("bing") %>% 
-  count(sentiment)
-#NRC has a higher ratio of positive words
- 
-bing_wc <- bing_tweets %>%
-  count(word, sentiment, sort = TRUE) %>%
-  ungroup() %>%
-  group_by(sentiment) %>%
-  slice_max(n, n = 12) %>%
-  ungroup %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(n,word,fill = sentiment))+
-  geom_col(show.legend = F)+
-  facet_wrap(~sentiment, scales = "free_y")+
-  labs(x = "Word count",
-       y = NULL,
-       title = "Word count by sentiment, Bing Lexicon")+
-  theme_bw()+
-  paletteer::scale_fill_paletteer_d("suffrager::classic")
-  
-
-nrc_wc <- nrc_posneg %>%
-  count(word, sentiment, sort = TRUE) %>%
-  ungroup() %>%
-  group_by(sentiment) %>%
-  slice_max(n, n = 12) %>%
-  ungroup %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(n,word,fill = sentiment))+
-  geom_col(show.legend = F)+
-  facet_wrap(~sentiment, scales = "free_y")+
-  labs(x = "Word count",
-       y = NULL,
-       title = "Word count by sentiment, NRC Lexicon")+
-  theme_bw()+
-  paletteer::scale_fill_paletteer_d("nbapalettes::sixers_retro")
- 
-grid.arrange(bing_wc, nrc_wc)
-
-```
-
-```{r}
-#bigram / trigram tokenization and analysis
-
-
-```
-
-```{r}
-#data-term matrix
-
-IRAcast <-Tweets_unnested %>%
-  count(Tweet_n, word) %>%
-  cast_dtm(Tweet_n, word, n)
-
-IRAcast
-
-IRA_LDA <- LDA(IRAcast, k = 4)
-LDA_tidy <- tidy(IRA_LDA, matrix = "beta")
-
-LDA_tidy
-
-IRAterms <- LDA_tidy %>%
-  group_by(topic)%>%
-  slice_max(beta, n = 10) %>%
-  ungroup() %>%
-  arrange(topic, beta)
-
-IRAterms %>%
-  mutate(term = reorder_within(term, beta, topic))%>%
-  ggplot(aes(beta, term, fill = factor(topic)))+
-  geom_col(show.legend = F)+
-  facet_wrap(~topic, scales = "free_y")+
-  scale_y_reordered()+
-   theme_bw()+
-  labs(x = "Probability",
-       y = "Word",
-       title = "Highest probability words by topic")+
-  paletteer::scale_fill_paletteer_d("werpals::pan")
-
-
-# Englishtweets <- IRAtweets %>%
-#   filter(language == "English") 
-#
-# Tweet_corpus <- Corpus(VectorSource(as.vector(Englishtweets$content))) %>%
-#   tm_map(content_transformer(removePunctuation)) %>%
-#   tm_map(content_transformer(removeNumbers)) %>%
-#   tm_map(content_transformer(tolower)) %>%
-#   tm_map(content_transformer(stripWhitespace)) %>%
-#   tm_map(content_transformer(stemDocument), language = "english")
-#   
-# Tweet_corpus
-# 
-# DTM_tweets <- DocumentTermMatrix(Tweet_corpus, control = list(wordLengths = c(2, Inf))) 
-
-
-
-  
-```
