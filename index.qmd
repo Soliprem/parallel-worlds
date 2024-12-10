@@ -6,6 +6,8 @@ format:
     toc: true
     section-numbering: 1.1.a
     columns: 1
+execute:
+  warning: false
 editor: visual
 ---
 
