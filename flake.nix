@@ -19,8 +19,17 @@
           rstudio
           R
           rPackages.tidyverse
+          rPackages.tidytext
+          rPackages.textdata
+          rPackages.tm
+          rPackages.gridExtra
+          rPackages.textclean
           rPackages.rmarkdown
           rPackages.quarto
+          rPackages.paletteer
+          rPackages.ggthemes
+          rPackages.psych
+          rPackages.ggpmisc
           quarto
         ];
         shellHook = ''
