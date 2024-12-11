@@ -24,12 +24,13 @@ library(ggpmisc)
 library(tidytext)
 library(tm)
 library(gridExtra)
-library(ldatuning)
 library(topicmodels)
-library(SnowballC)
+library(ldatuning)
 library(caret)
 library(textclean)
-library(ldatuning)
+library(igraph)
+library(ggraph)
+library(widyr)
 ```
 
 ## Importing, merging and cleaning the dataset
@@ -70,12 +71,13 @@ df_list <- list(
 IRAtweets <- do.call("rbind", df_list)
 IRAtweets <- subset(IRAtweets, select=c(-external_author_id,-harvested_date,-new_june_2018,-alt_external_id,-tweet_id,-article_url,-tco1_step1,-tco2_step1,-tco3_step1))
 
-set.seed(777)
+
 ```
 
 Since the analysis is quite taxing, we're going to sample 100.000 tweets to perform a preliminary analysis on. Remove the first line in the following block in order to conduct an analysis of the full dataset.
 
 ```{r}
+set.seed(777)
 IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis 
 ```
 
@@ -253,10 +255,11 @@ grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```{r}
 #text analysis
 data("stop_words")
-url <- "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 
 Tweets_unnested <- IRAtweets %>%
-  filter(language == "English",)%>%
+  filter(language == "English",
+         !account_category == "NonEnglish",
+         !account_category == "Unknown")%>%
   mutate(Tweet_n = row_number(content))%>%
   mutate(content = replace_url(content))%>%
   unnest_tokens(word, content) %>%
@@ -290,22 +293,19 @@ head(tweet_words)
 
 tweet_tf_idf <- tweet_words %>% 
   bind_tf_idf(word, account_category,n)
+
  #finding important words by decreasing weight in common used words and increasing it for not-so used ones
 # tf-idf measures how important a term is within the text that adjusts for the fact that some words may appear more commonly than others
 # thus tf = term frequency, so idf / tf-idf = 0 for extremely common words, and increasing for the rarity of the terms
 
 tweet_tf_idf %>%
-  filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !account_category == "HashtagGamer", #just returned random hashtags
+  filter(!account_category == "HashtagGamer", #just returned random hashtags
          !account_category == "Commercial")%>% #just returned ads
   select(-tot)%>%
   arrange(desc(tf_idf))
 
 tweet_tf_idf %>%
-  filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !account_category == "HashtagGamer", #just returned random hashtags
+  filter(!account_category == "HashtagGamer", #just returned random hashtags
          !account_category == "Commercial")%>% #returned ads
   group_by(account_category)%>%
   slice_max(tf_idf, n = 10) %>%
@@ -319,12 +319,61 @@ tweet_tf_idf %>%
        title = "High tf-idf words by account groups")+
   paletteer::scale_fill_paletteer_d("nbapalettes::lakers_city")
   
+```
+
+```{r}
+#bigram tokenization and analysis
+#bigrams are series of 2 words (grey fox is fast = grey fox / fox is / is fast)
+tweets_bigrams <- IRAtweets %>%
+  filter(language == "English",
+         !account_category == "NonEnglish",
+         !account_category == "Unknown",)%>%
+  mutate(Tweet_n = row_number(content))%>%
+  mutate(content = replace_url(content))%>%
+  unnest_tokens(bigram, content, token = "ngrams", n = 2) %>%
+  filter(!is.na(bigram))
+
+bigrams_sep <- tweets_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+bigrams_filter <- bigrams_sep %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word)
+
+bigrams_count <- bigrams_filter %>% 
+  count(word1, word2, sort = TRUE)
+
+bigrams_count
+
+bigrams_united <-  bigrams_filter %>%
+  unite(bigram, word1, word2, sep = " ")
+bigrams_united
+
+bigram_tf_idf <- bigrams_united %>%
+  count(account_category, bigram) %>%
+  bind_tf_idf(bigram, account_category, n) %>%
+  arrange(desc(tf_idf))
+bigram_tf_idf
+
+bigram_igraph <- bigrams_count %>%
+  filter(n > 55) %>%
+  graph_from_data_frame()
+
+set.seed(808)
+arrow <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+
+ggraph(bigram_igraph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                 arrow = arrow, end_cap = circle(.07, 'inches'))+
+  geom_node_point(color = "lightgreen", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  theme_void()
 
 ```
 
 ```{r}
 #sentiment analysis
-
+#sentiment lexicons must be installed 
 
 tweet_words %>%
   filter(!word == "trump")%>% #Trump (president) is interpreted as trump (surprise)
@@ -334,8 +383,6 @@ nrc_tweets <- Tweets_unnested %>%
   inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
   filter(!sentiment == "positive",
          !sentiment == "negative",
-         !account_category == "NonEnglish",
-         !account_category == "Unknown",
          !word == "trump",)%>%
   mutate(method = "NRC")
 
@@ -346,9 +393,7 @@ nrc_posneg <-  Tweets_unnested %>%
 
 bing_tweets <- Tweets_unnested %>%
   inner_join(get_sentiments("bing"), relationship = "many-to-many")%>%
-   filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",
+   filter(!word == "trump",
          !word == "breaking")%>%
   mutate(method = "Bing")
 
@@ -395,9 +440,7 @@ bing_tweets %>%
 
 #Comparing the 3 lexicons
 afinn_tweets <- Tweets_unnested %>%
-   filter(!account_category == "NonEnglish",
-         !account_category == "Unknown",
-         !word == "trump",
+   filter(!word == "trump",
          ! word == "breaking") %>%
   inner_join(get_sentiments("afinn"))%>%
   group_by(score = Tweet_n %/% 100) %>%
@@ -415,7 +458,7 @@ bing_nrc_tweets <- bind_rows(bing_tweets ,nrc_posneg)%>%
   facet_wrap(~method, ncol = 1, scales = "free_y" )+
   paletteer::scale_fill_paletteer_d("ggthemes::excel_Gallery")+
   theme_bw()+
-   labs(x = "Tweets (hundreds)",y = "Score", title = "Comparing different lexicons")
+   labs(x = "Tweets (thou)",y = "Score", title = "Comparing different lexicons")
 
 #NRC is notoriously known as a more positive lexicon than others 
  get_sentiments("nrc") %>% 
@@ -464,48 +507,38 @@ grid.arrange(bing_wc, nrc_wc)
 ```
 
 ```{r}
-#bigram / trigram tokenization and analysis
-
-
-```
-
-```{r}
 #data-term matrix
+
 set.seed(505)
 Tweets_Partition <- createDataPartition(Tweets_unnested$Tweet_n,p=0.8,list=FALSE)
 Tweets_Train <- Tweets_unnested[Tweets_Partition,] #train data, 80%
 Tweets_Test <-  Tweets_unnested[-Tweets_Partition,] #Test data, 20%
 
-IRAcast_train <-Tweets_Train %>%
-  count(Tweet_n, word) %>%
-  cast_dtm(Tweet_n, word, n)
+#find the correct number of topics 
+#THIS IS COMMENTED SINCE IT TAKES 1+ HOURS ON MY 6-CORE PC, THE PLOT IS ATTACHED
+# updog <- FindTopicsNumber(
+#   IRAcast_train,
+#   topics = seq(from = 2, to = 60, by = 1),
+#   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010"),
+#   method = "Gibbs",
+#   mc.cores = 4L,
+#   verbose = TRUE)
+# 
+# FindTopicsNumber_plot(updog)
+# 25 is chosen as the optimal number of topics
 
-IRAcast_test <- Tweets_Test %>%
-  count(Tweet_n, word) %>%
-  cast_dtm(Tweet_n, word, n)
+#LDA model (may take a few minutes)
+trainLDA <- LDA(dtm_train, k = 25, method = "Gibbs") #"k = " for topics
+trainLDAtidy_terms <- tidy(trainLDA, matrix = "beta")
 
-#find the correct number of topics
-updog <- FindTopicsNumber(
-  IRAcast_train,
-  topics = seq(from = 2, to = 30, by = 1),
-  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
-  method = "Gibbs",
-  mc.cores = 2L,
-  verbose = TRUE)
-
-FindTopicsNumber_plot(updog)
-
-IRA_trainLDA <- LDA(IRAcast_train, k = 4, method = "Gibbs") #"k = " for topics
-trainLDA_tidy <- tidy(IRA_LDA, matrix = "beta")
-
-
-IRAterms_train <- trainLDA_tidy %>%
+terms_train <- trainLDAtidy_terms %>%
   group_by(topic)%>%
   slice_max(beta, n = 10) %>%
   ungroup() %>%
   arrange(topic, beta)
 
-IRAterms %>%
+terms_train %>%
+  filter(topic %in% (1:9))%>% #visualize the topics with the most word %
   mutate(term = reorder_within(term, beta, topic))%>%
   ggplot(aes(beta, term, fill = factor(topic)))+
   geom_col(show.legend = F)+
@@ -515,8 +548,45 @@ IRAterms %>%
   labs(x = "Probability",
        y = "Word",
        title = "Highest probability words by topic")+
-  paletteer::scale_fill_paletteer_d("werpals::pan")
+  scale_fill_paletteer_d("MetBrewer::Cross")
 
-perplexity(IRA_trainLDA, IRAcast_train, estimate_theta = F)
-perplexity(IRA_trainLDA, IRAcast_test, estimate_theta = T )
+#per-topic word probabilities
+termstrain_wide <- terms_train %>% 
+  mutate(topic = paste0("topic", topic)) %>%
+  pivot_wider(names_from = topic, values_from = beta)
+termstrain_wide #probability of the top 10 words appearing in topic
+
+#per-document word probabilities
+trainLDAtidy_docs <- tidy(trainLDA, matrix = "gamma")
+trainLDAtidy_docs #share of words from that document generated from that topic
+
+#model evaluation
+perplexity(trainLDA, dtm_train, estimate_theta = F)
+perplexity(trainLDA, dtm_test, estimate_theta = T )
+
+
+```
+
+```{r}
+#sentiment by topic
+nrc_LDAtrain <- trainLDAtidy_terms %>%
+  rename(word = term) %>%
+  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
+  filter(!sentiment == "positive",
+         !sentiment == "negative",
+         !word == "trump",)%>%
+  mutate(method = "NRC")
+
+nrc_LDAtrain %>%
+  filter(topic %in% (1:9))%>%
+  group_by(topic)%>%
+  slice_max(beta, n = 50) %>%
+  count(sentiment) %>%
+  ggplot(aes(sentiment,n))+
+  geom_bar(stat = "identity",aes(fill = topic), show.legend = F)+
+  facet_wrap(~topic, ncol = 3)+
+   theme_bw()+
+  labs(x = "Sentiments",y = "count", title = "Sentiment count of the 50 most probable words by topic")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  paletteer::scale_fill_paletteer_c("ggthemes::Sunset-Sunrise Diverging")
 ```
