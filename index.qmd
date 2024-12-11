@@ -30,7 +30,6 @@ library(caret)
 library(textclean)
 library(igraph)
 library(ggraph)
-library(widyr)
 ```
 
 ## Importing, merging and cleaning the dataset
@@ -458,7 +457,7 @@ bing_nrc_tweets <- bind_rows(bing_tweets ,nrc_posneg)%>%
   facet_wrap(~method, ncol = 1, scales = "free_y" )+
   paletteer::scale_fill_paletteer_d("ggthemes::excel_Gallery")+
   theme_bw()+
-   labs(x = "Tweets (thou)",y = "Score", title = "Comparing different lexicons")
+   labs(x = "Tweets (thousands)",y = "Score", title = "Comparing different lexicons")
 
 #NRC is notoriously known as a more positive lexicon than others 
  get_sentiments("nrc") %>% 
@@ -547,8 +546,7 @@ terms_train %>%
    theme_bw()+
   labs(x = "Probability",
        y = "Word",
-       title = "Highest probability words by topic")+
-  scale_fill_paletteer_d("MetBrewer::Cross")
+       title = "Highest probability words by topic")
 
 #per-topic word probabilities
 termstrain_wide <- terms_train %>% 
@@ -563,8 +561,6 @@ trainLDAtidy_docs #share of words from that document generated from that topic
 #model evaluation
 perplexity(trainLDA, dtm_train, estimate_theta = F)
 perplexity(trainLDA, dtm_test, estimate_theta = T )
-
-
 ```
 
 ```{r}
