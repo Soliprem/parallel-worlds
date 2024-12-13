@@ -26,11 +26,17 @@ library(tm)
 library(gridExtra)
 library(topicmodels)
 library(ldatuning)
-library(caret)
+library(caret)madrefomadrefottitori sosterranno che dnd è troppo lungo ed intanto giocano a Catanttitori sosterranno che dnd è troppo lungo ed intanto giocano a Catan
 library(textclean)
 library(igraph)
 library(ggraph)
 ```
+
+## Research Question
+In our pursuit of understanding how parallel worlds are built, we have to understand two things:
+- what makes an astroturf?
+- what effect does it actually have?
+To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilising the NRC, Bing and AFINN lexicons. 
 
 ## Importing, merging and cleaning the dataset
 
