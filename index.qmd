@@ -13,6 +13,24 @@ editor: visual
 
 # Parallel Worlds - a View of Social Media Manipulation and Polarization
 
+-   Michele Salvi / michele.salvi4\@studio.unibo.it / 0001082457
+
+-   Francesco Prem Solidoro / francesco.solidoro\@studio.unibo.it / 0001071898
+
+## Introduction
+
+The topic of manipulation has long been studied by scholars in its different facets, and in this paper we'll explore the connection between the political sphere and manipulation when used as an instrument to achieve control.
+
+In the last years social media usage has skyrocketed @rise, thus more advanced methods of manipulating public opinion, both in and outside the political sphere, have arisen due to the innovations and reach that social media platforms boast. Historically, the preferred outcome of manipulation has always been polarization, giving rise to strong leaders and divides @pol-hist.
+
+The Merriam-Webster dictionary defines polarization @pol-def as "a state in which the opinions, beliefs, or interests of a group or society no longer range along a continuum but become concentrated at opposing extremes", it's a key factor to view polarization as an outcome rather than a means, since it's always been the objective of different political parties to achieve their goals. Now, in this era of limitless communication, one would see complete polarization as harder to achieve, due to the sheer amount of different opinions available on social media, but there's a new, and arguably the worst ever, means of achieving a polarized society: astroturfing.
+
+Astroturfing is defined by the Merriam-Webster dictionary @astro-def as "organized activity that is intended to create a false impression of a widespread, spontaneously arising, grassroots movement in support of or in opposition to something but that is in reality initiated and controlled by a concealed group or organization". Such a practice is deeply deceptive and thrives on platforms like social media, where identity can be disguised and allegiance faked, to distort and manipulate public opinion.
+
+Astroturfing can be declined into two further classifications, *commercial astroturfing*, centered around the accumulation of profit, and *political astroturfing*, concerned with the attainment of political objectives. Research on political astroturfing has become increasingly present in the last years, and it mainly focuses on analyzing its effects on politics, highlighting the power that this practice represents by exposing its presence in (but not limited to) South Korea's 2012 Presidential Elections @astro-sudkr, the USA's 2016 elections @astro-usa2016 and faking Chinese Social media posts @astro-china. These papers highlight the real-world effects and the seriousness of groups and/or individuals rich in economic and social capital, who seek to manipulate public opinion to achieve private objectives, especially in politics, putting them in commanding positions.
+
+The idea behind the "parallel worlds" is that polarization through astroturfing acts silently and unbeknownst to the population, creating fissures and fragmentation in public opinion that effectively alienate and polarize society. The preferred medium for this practice is, as previously stated, through social media, so we focused on the biggest and most documented instance of astroturfing, the 2016 USA elections
+
 ```{r}
 library(tidyverse)
 library(paletteer)
