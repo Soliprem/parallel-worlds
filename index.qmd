@@ -29,7 +29,17 @@ Astroturfing is defined by the Merriam-Webster dictionary @astro-def as "organiz
 
 Astroturfing can be declined into two further classifications, *commercial astroturfing*, centered around the accumulation of profit, and *political astroturfing*, concerned with the attainment of political objectives. Research on political astroturfing has become increasingly present in the last years, and it mainly focuses on analyzing its effects on politics, highlighting the power that this practice represents by exposing its presence in (but not limited to) South Korea's 2012 Presidential Elections @astro-sudkr, the USA's 2016 elections @astro-usa2016 and faking Chinese Social media posts @astro-china. These papers highlight the real-world effects and the seriousness of groups and/or individuals rich in economic and social capital, who seek to manipulate public opinion to achieve private objectives, especially in politics, putting them in commanding positions.
 
-The idea behind the "parallel worlds" is that polarization through astroturfing acts silently and unbeknownst to the population, creating fissures and fragmentation in public opinion that effectively alienate and polarize society. The preferred medium for this practice is, as previously stated, through social media, so we focused on the biggest and most documented instance of astroturfing, the 2016 USA elections
+The idea behind the "parallel worlds" is that polarization through astroturfing acts silently and unbeknownst to the population, creating fissures and fragmentation in public opinion that effectively alienate and polarize society. The preferred medium for this practice is, as previously stated, through social media, so we focused on the biggest and most documented instance of astroturfing, the 2016 USA elections.
+
+## Research Question
+
+In our pursuit of understanding how parallel worlds are built, we have to understand two things:
+
+-    what makes an astroturf?
+
+-    what effect does it actually have?
+
+    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilising the NRC, Bing and AFINN lexicons.
 
 ```{r}
 library(tidyverse)
@@ -50,13 +60,7 @@ library(igraph)
 library(ggraph)
 ```
 
-## Research Question
-In our pursuit of understanding how parallel worlds are built, we have to understand two things:
-- what makes an astroturf?
-- what effect does it actually have?
-To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilising the NRC, Bing and AFINN lexicons. 
-
-## Importing, merging and cleaning the dataset
+## Downloading, Importing, merging and cleaning the dataset
 
 We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets). Analysis will be performed using the NRC, Bing and AFINN lexicons
 
