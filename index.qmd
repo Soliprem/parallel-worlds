@@ -39,7 +39,9 @@ In our pursuit of understanding how parallel worlds are built, we have to unders
 
 -    what effect does it actually have?
 
-    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilising the NRC, Bing and AFINN lexicons.
+-   is it possible to generalize and model an astroturfing from the words used?
+
+    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC, Bing and AFINN lexicons, and
 
 ```{r}
 library(tidyverse)
@@ -54,7 +56,7 @@ library(tm)
 library(gridExtra)
 library(topicmodels)
 library(ldatuning)
-library(caret)madrefomadrefottitori sosterranno che dnd è troppo lungo ed intanto giocano a Catanttitori sosterranno che dnd è troppo lungo ed intanto giocano a Catan
+library(caret)
 library(textclean)
 library(igraph)
 library(ggraph)
@@ -62,7 +64,7 @@ library(ggraph)
 
 ## Downloading, Importing, merging and cleaning the dataset
 
-We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets). Analysis will be performed using the NRC, Bing and AFINN lexicons
+We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets), which were merged into a single dataset.
 
 ```{r}
 IRAtweets1 <- read_csv("data/russian-troll-tweets/IRAhandle_tweets_1.csv")
@@ -101,12 +103,38 @@ IRAtweets <- subset(IRAtweets, select=c(-external_author_id,-harvested_date,-new
 
 ```
 
-Since the analysis is quite taxing, we're going to sample 100.000 tweets to perform a preliminary analysis on. Remove the first line in the following block in order to conduct an analysis of the full dataset.
+Since the analysis is quite taxing, we're going to sample 100.000 tweets to perform a preliminary analysis on. Remove the following block in order to conduct an analysis of the full dataset.
 
 ```{r}
 set.seed(777)
 IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for complete analysis 
 ```
+
+The cleaned and merged dataset contains the following variables:
+
+-   **author**: the author of the tweet, categoical
+
+-   **content**: the content (text) of the tweet, string
+
+-   **region**: the region in which the tweet "originated", if not specified it's marked as "Unknown", categorical
+
+-   **language**: the language in which the tweet was written , categorical
+
+-   **publish_date**: the date in which the tweet was published, date
+
+-   **following**: the number of accounts followed by the tweet author, numerical
+
+-   **followers**: the number of accounts that follow the tweet author, numerical
+
+-   **updates**: the number of impressions (likes, comments and retweets) summed, numerical
+
+-   **post_type**: the type of post (retweet / quote retweet / NA for normal tweets), categorical
+
+-   **account_type**: the type of account, previously set, by tweet content, categorical
+
+-   **retweet:** weather the tweet was a retweet or not, binary
+
+-   **account_category:** the accounts grouped by categories based on tweet content, categorical
 
 ```{r}
 #descriptive stuff
