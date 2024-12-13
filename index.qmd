@@ -17,6 +17,13 @@ editor: visual
 
 -   Francesco Prem Solidoro / francesco.solidoro\@studio.unibo.it / 0001071898
 
+## Abstract
+What is truth? It cna be argued that truth is but the set of facts we intersubjectively agree to be correct as a society. In this view, while voices of specialists hold power sway, it's ultimately public opinion that shapes the shared ground over which political discourse and policy are built. It immediately becomes apparent that choosing one's terrain is a powerful tool in achieving one's objectives. To that end, it becomes essential to:
+- win over people to believe in your cause
+- make sure people you won over don't leave for other causes
+In comes "Parallel Worlds".  There's no stronger attack against opposing ideas than die-hard fans, and no defense more solid than said die-hard fans _never beign exposed to competing ideas_.
+The pursuit for achieving a parallel world with a Truth that's centralised is an old one: think of Mussolini and Hitler's use of radio. The renewed threat coming from it is that we're coming off of a new media revolution: just like the printing press, the radio and the television before it, the internet has radically changed the way information flows through society. Analogously, with this revolution, new paradigms of communiction have burst into the scene, alongside methods for manipulation of information. The Internet has the unique property of allowign anyone to have a voice, and therefore to represent in an uncanny way the dynamics of social converstation, where not only the loudest, but also the most numerous voices dominate. In this there's an inherit democratic principle of attention being divided equally through society. In this there's also an inherent danger: with bots and technologicla advancment, it's become easy to artificially boost ideas to favour an agenda through a faux legitimisation from a virtual majority. With the objective of enclosing people who believe they're engaged in an open network into a closed down bubble of ideas, thus spawns the Astroturf. A successful astroturf will appear to be grassroots support for an idea, while driving polarisation to a point where those in support and those in opposition to the target idea will effectively live in different, parallel worlds. With all contact being auspicably hostile: demonisation of the other side, deification of one's one, discreditation of third party "experts". These are all hallmarks of astroturf campaigns, and they're more and more visible within modern society, as this camflauged threat rips the promise of the open internet into bubbles floating in the sea of its former potential.
+
 ## Introduction
 
 The topic of manipulation has long been studied by scholars in its different facets, and in this paper we'll explore the connection between the political sphere and manipulation when used as an instrument to achieve control.
@@ -40,6 +47,7 @@ In our pursuit of understanding how parallel worlds are built, we have to unders
 -    what effect does it actually have?
 
     To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilising the NRC, Bing and AFINN lexicons.
+
 
 ```{r}
 library(tidyverse)
