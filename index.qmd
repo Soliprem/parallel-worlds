@@ -439,9 +439,12 @@ ggraph(bigram_igraph, layout = "fr") +
                  arrow = arrow, end_cap = circle(.07, 'inches'))+
   geom_node_point(color = "lightgreen", size = 5) +
   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  labs(title = "All combinations of words in bigrams")+
   theme_void()
 
 ```
+
+Arrows represent directional relationships between pairs of words, and distance is irrelevant.
 
 ```{r}
 #sentiment analysis
