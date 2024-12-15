@@ -600,15 +600,15 @@ It's worth noting that perplexity remains high, but that's to be expected: even 
 #| execute: false
 
 #find the correct number of topics 
- updog <- FindTopicsNumber(
-   IRAcast_train,
-   topics = seq(from = 2, to = 60, by = 1),
-   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010"),
-   method = "Gibbs",
-   mc.cores = 4L,
-   verbose = TRUE)
+ #updog <- FindTopicsNumber(
+ #  IRAcast_train,
+ #  topics = seq(from = 2, to = 60, by = 1),
+ #  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010"),
+ #  method = "Gibbs",
+ #  mc.cores = 4L,
+ #  verbose = TRUE)
  
- FindTopicsNumber_plot(updog)
+ #FindTopicsNumber_plot(updog)
 # 25 is chosen as the optimal number of topics
 ```
 That being said, we can cleraly observe patterns of topic forming within the model
