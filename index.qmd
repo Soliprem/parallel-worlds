@@ -14,7 +14,6 @@ editor: visual
 # Parallel Worlds - a View of Social Media Manipulation and Polarization
 
 -   Michele Salvi / michele.salvi4\@studio.unibo.it / 0001082457
-
 -   Francesco Prem Solidoro / francesco.solidoro\@studio.unibo.it / 0001071898
 
 ## Abstract
@@ -45,7 +44,7 @@ In our pursuit of understanding how parallel worlds are built, we have to unders
 
 -   is it possible to generalize and model an astroturfing from the words used?
 
-    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC, Bing and AFINN lexicons, and
+    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC, Bing and AFINN lexicons, and the aid of LDA, latent dirichlet allocation, to model the topics discussed in the tweets.
 
 ```{r}
 library(tidyverse)
@@ -66,7 +65,7 @@ library(igraph)
 library(ggraph)
 ```
 
-## Downloading, Importing, merging and cleaning the dataset
+### Downloading, Importing, merging and cleaning the dataset
 
 We got the following datasets from [538's github](github.com/fivethirdyeight/russian-troll-tweets), which were merged into a single dataset.
 
@@ -117,27 +116,16 @@ IRAtweets <- IRAtweets[sample(nrow(IRAtweets), 100000),] #remove line for comple
 The cleaned and merged dataset contains the following variables:
 
 -   **author**: the author of the tweet, categorical
-
 -   **content**: the content (text) of the tweet, string
-
 -   **region**: the region in which the tweet "originated", if not specified it's marked as "Unknown", categorical
-
 -   **language**: the language in which the tweet was written , categorical
-
 -   **publish_date**: the date in which the tweet was published, date
-
 -   **following**: the number of accounts followed by the tweet author, numerical
-
 -   **followers**: the number of accounts that follow the tweet author, numerical
-
 -   **updates**: the number of impressions (likes, comments and retweets) summed, numerical
-
 -   **post_type**: the type of post (retweet / quote retweet / NA for normal tweets), categorical
-
 -   **account_type**: the type of account, previously set, by tweet content, categorical
-
 -   **retweet:** weather the tweet was a retweet or not, binary
-
 -   **account_category:** the accounts grouped by categories based on tweet content, categorical
 
 ```{r}
@@ -209,6 +197,8 @@ Meanimp_P <- mean_imp %>%
 Meanimp_P
 ```
 
+As it can be observed in the graph, despite there being IRA-connected accounts in multiple regions, most of the interactions and impressions come from tweets from the united states.
+
 To represent well the most significant regions (United states, Unknown) we categorized the IRA-connected accounts by their type, so the macro-topic they covered in their tweets, along with the retweet rate and descriptive statistics on the follows and followers.
 
 ```{r}
@@ -241,7 +231,9 @@ Regionacctype_P <- IRAtweets %>%
 Regionacctype_P
 ```
 
-Additionally, since the times at which the tweets were posted are included in the dataset, we plot them, progressively focusing on the date of the presidential election, to have a look at the patterns.
+Most of the accounts in the tweets can be traced back to either the US or the "Unknown" region, but since most accounts in this last region are "NonEnglish", we'll discard those and focus on those composed in English for most of our analysis.
+
+Additionally, since the times at which the tweets were posted are included in the dataset, we plot them, progressively restricting them on the date of the presidential election, to have a look at the patterns.
 
 ```{r}
 
@@ -322,6 +314,12 @@ tweets_after <- IRAtweets %>% #focusing on election year
 
 grid.arrange(Timeseries_P,tweets_1y, tweets_before, tweets_after,nrow = 2 )
 ```
+
+As it can be observed, tweets steadily increased until a few days after the election, when they started dropping.
+
+## Analysis
+
+### Text analysis 
 
 ```{r}
 #text analysis
