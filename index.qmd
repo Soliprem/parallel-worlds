@@ -790,6 +790,12 @@ Additionally high values of trust and fear oriented words can be observed around
 
 ## Conclusion
 
+In this paper we observed that during the 2016 election season, there's clear patterns that we can observe through sentiment analysis that characterize this specific astroturf operation orchestrated by the IRA. Through text analysis, we could observe specific sets of words, through sentiment analysis we could observe the choice in sentiments to be boosted, and through LDA analysis we could observe the distribution of both of these across specific topics. The findings of such tactics were supplemented by the use of more common text-mining approaches like word frequencies and tf-idf.
+
+For example, we noticed that Trump-adjacent topics were commonly associated with positive sentiment, like "trust", and by far right-leaning words and ideas were by far the most shared on our dataset.
+
+From the combination of these analyses and our interpretative work, we can corroborate the assumption that IRA's intention was to aid President-Elect Donald in winning the presidency in 2016. This tracks with the findings of the Mueller report and of most other literature on the subject. What's interesting is the possible application in iterating on these findings to look for consistent patterns across many known astroturf operations, to be finally able to model their occurrence, and finally be able to tackle them before the consequences of their presence become apparent, as has been the case so far.
+
 ## Future Work
 
 ### Network Analysis
