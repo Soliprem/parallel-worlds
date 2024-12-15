@@ -30,6 +30,12 @@
           rPackages.ggthemes
           rPackages.psych
           rPackages.ggpmisc
+          rPackages.topicmodels
+          rPackages.ldatuning
+          rPackages.caret
+          rPackages.textclean
+          rPackages.igraph
+          rPackages.ggraph
           quarto
         ];
         shellHook = ''
