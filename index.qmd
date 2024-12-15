@@ -754,6 +754,8 @@ perplexity(trainLDA, dtm_test, estimate_theta = T )
 
 We can observe several clear topic being distinguished, some of which along political lines, like the Obama presidency, Hillary Clinton and Donald Trump. Some of which along cultural topics, like workouts or sports.
 
+![](plots/IRA_LDA25.png)
+
 We then evaluate sentiment by topic
 
 ```{r}
@@ -779,6 +781,8 @@ nrc_LDAtrain %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
   paletteer::scale_fill_paletteer_c("ggthemes::Sunset-Sunrise Diverging")
 ```
+
+![](plots/IRA_LDASent25.png)
 
 We can observe that topic Trump is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
 
