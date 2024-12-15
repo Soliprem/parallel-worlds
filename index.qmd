@@ -786,6 +786,8 @@ nrc_LDAtrain %>%
 
 We can observe that topic Trump is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
 
+Additionally high values of trust and fear oriented words can be observed around multiple topics, but generally fear, trust and anger are the most shared sentiments.
+
 ## Conclusion
 
 ## Future Work
