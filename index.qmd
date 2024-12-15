@@ -435,16 +435,48 @@ bigrams_count <- bigrams_filter %>%
 
 bigrams_count
 
+
 bigrams_united <-  bigrams_filter %>%
   unite(bigram, word1, word2, sep = " ")
-bigrams_united
 
+```
+
+This gives us additional context on the most common words, like "world news" and "donald trump"
+
+We can also repeat the tf_idf analysis with bigrams to capture additional context that might have been discarded by single-word analysis.
+
+```{r}
 bigram_tf_idf <- bigrams_united %>%
   count(account_category, bigram) %>%
   bind_tf_idf(bigram, account_category, n) %>%
   arrange(desc(tf_idf))
 bigram_tf_idf
 
+
+```
+
+Again, bigrams like "poisoned turkey", "isis accounts", reveal patterns that weren't captured by the previous tf-idf plot
+
+```{r}
+bigram_tf_idf %>%
+  filter(!account_category == "HashtagGamer", #just returned random hashtags
+         !account_category == "Commercial")%>% #returned ads
+  group_by(account_category)%>%
+  slice_max(tf_idf, n = 10) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(bigram,tf_idf), fill = account_category))+
+  geom_col(show.legend = F)+
+  facet_wrap(~account_category, ncol = 2, scales = "free")+
+  theme_bw()+
+  labs(x = "tf-idf",
+       y = NULL,
+       title = "High tf-idf bigrams by account groups")+
+  paletteer::scale_fill_paletteer_d("nbapalettes::bucks_city")
+```
+
+Additionally, the bigram combinations can be plot in a network graph:
+
+```{r}
 bigram_igraph <- bigrams_count %>%
   filter(n > 55) %>%
   graph_from_data_frame()
@@ -466,9 +498,9 @@ Arrows represent directional relationships between pairs of words, and distance 
 
 ### Sentiment Analysis
 
-This block filters out the word "trump" (to avoid misinterpretation in sentiment analysis) and
-joins the dataset with the NRC sentiment lexicon to classify words into sentiment categories.
-The result is a dataset of words with assigned sentiments.
+Sentiment analysis is a text analysis practice that assigns single words to sentiments as a method to interpret the emotion and feeling that a word is trying to convey.
+
+This block filters out the word "trump" (to avoid misinterpretation in sentiment analysis) and joins the dataset with the NRC sentiment lexicon to classify words into sentiment categories. The result is a dataset of words with assigned sentiments.
 
 ```{r}
 #sentiment analysis
@@ -637,9 +669,9 @@ We can observe that NRC is more positive than the other lexicons, even after cor
 
 ### LDA Modelling
 
-We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which retunrs us a model for how likely each word is to come out each topic.
+We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
-We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated throguh LDA into topics, which retuns us a model for how likely each word is to come out each topic.
+We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
 First we have to train the model, so we're going to divide the tweets into training and testing data with an 80/20 split.
 
@@ -660,9 +692,9 @@ dtm_test <- Tweets_Test %>%
   cast_dtm(Tweet_n, word, n)
 ```
 
-We then run the model for different numbers of topic, and evaluate its accuracy (which is measured by the model's perplexity). We toggle this codeblock's execution off because it takes a long time to run, but the model is most accurate with 25 topics.
+We then run the model for different numbers of topic, and evaluate its accuracy (which is measured by the model's perplexity). We toggle this codeblock's execution off because it takes a long time to run, but the model is most accurate with 25 topics (as shown by the plot).
 
-It's worth noting that perplexity remains high, but that's to be expected: even in human interpretation it's recognised that Tweets, by their very nature, are often ambiguous. Astroturf-related tweets, which by their own objective try to be even more ambiguous, are bound to share that quality.
+It's worth noting that perplexity remains high, despite the singular iteration, but that's to be expected: even in human interpretation it's recognised that Tweets, by their very nature, are often ambiguous. Astroturf-related tweets, which by their own objective try to be even more ambiguous, are bound to share that quality.
 
 ```{r}
 #| execute: false
@@ -679,6 +711,8 @@ It's worth noting that perplexity remains high, but that's to be expected: even 
  # FindTopicsNumber_plot(updog)
 # 25 is chosen as the optimal number of topics
 ```
+
+![](images/LDA_topic_minimization.jfif)
 
 That being said, we can clearly observe patterns of topic forming within the model
 
