@@ -6,8 +6,11 @@ format:
     toc: true
     section-numbering: 1.1.a
     columns: 1
+    bibliography: references.yml
+    bibliographystyle: apa
 execute:
   warning: false
+  cache: true
 editor: visual
 ---
 
