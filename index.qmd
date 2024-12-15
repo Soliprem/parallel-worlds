@@ -667,7 +667,7 @@ We can observe that NRC is more positive than the other lexicons, even after cor
 
 ### LDA Modelling
 
-We proceed to use LDA analysis @<https://dl.acm.org/doi/10.5555/944919.944937> to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
+We proceed to use LDA analysis \@<https://dl.acm.org/doi/10.5555/944919.944937> to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
 We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
@@ -785,9 +785,17 @@ We can observe that topic Trump is correlated with high feelings of trust, hope.
 ## Conclusion
 
 ## Future Work
+
 ### Network Analysis
+
 It's opportune to verify the hypothesis that astroturf operations such as this one have effects on polarization, observed through network betweenness. We hope to do so by checking for differences between data gathered before and after the election
+
 ### New data
+
 It'd be interesting to observe the evolution of astroturf given the recent developments in generative technology. To do so, we'd need to access new, large amounts of data. This cna't cheaply be done off of Twitter (now X), so we hope to do so through fediverse or bluseky (or AT-based) platforms.
 
 With this new data, we could then run a similar kind of analysis to observe if the patterns we found in 2016 remain and fully develop a recognisation model. At the same time, we could better develop a model using the help of network analysis: shoudl our hypothesis about polarization hold, increases in network polarization would be possible markers of astroturf campaigns, and therefore "hot spots" to analyse.
+
+### LDA opportunities
+
+Due to computational constraints on the datasets of such a size, we were able to run LDA with only one iteration, leading to fairly significant results. This leaves us optimistic on the possible results that could be achieved by running the algorithm with at least 1000 iterations, potentially optimizing astroturf recognition and detection.
