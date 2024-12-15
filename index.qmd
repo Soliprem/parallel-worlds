@@ -324,6 +324,10 @@ As it can be observed, tweets steadily increased until a few days after the elec
 
 ### Text analysis
 
+We began our analysis by focusing on the tweet's text. In this type of "word" centered approach we filtered the tweets to contain only English tweets, removing links and "stop words" (words such as the,a , by...) that would just hinder the process.
+
+We then tokenized the tweets by words, that is splitting each word in the content while homogenizing the text
+
 ```{r}
 #text analysis
 data("stop_words")
@@ -349,7 +353,6 @@ Tweets_unnested%>%
   count(word, sort = T)%>%
   pivot_wider(names_from = account_category, values_from = n)
 
-
 tweet_words <- Tweets_unnested%>%
   count(account_category, word, sort = T)
 
@@ -362,12 +365,18 @@ tweet_words<- left_join(tweet_words, tot_words) %>%
   ungroup() %>%
   filter(!word == "")
 head(tweet_words)
+```
 
+The most common words in the tweets are "news", "trump" and "police", by grouping the words by account we can see that those words are fairly common also by controlling for the different account types, further confirmed by the percentage frequencies of the same words.
+
+Then we analyzed the word's tf-idf, the term frequency-inverse document frequency, which is a measure that assigns lower weight to words that are frequently used and a higher one to the uncommon ones.
+
+The idea is to find a middle point between the two, as some words may be important to describe a text, while not being the most commonly used.
+
+```{r}
 tweet_tf_idf <- tweet_words %>% 
   bind_tf_idf(word, account_category,n)
 
- #finding important words by decreasing weight in common used words and increasing it for not-so used ones
-# tf-idf measures how important a term is within the text that adjusts for the fact that some words may appear more commonly than others
 # thus tf = term frequency, so idf / tf-idf = 0 for extremely common words, and increasing for the rarity of the terms
 
 tweet_tf_idf %>%
@@ -392,6 +401,10 @@ tweet_tf_idf %>%
   paletteer::scale_fill_paletteer_d("nbapalettes::lakers_city")
   
 ```
+
+The high tf-idf words, plot by account category, highlights common words to the 2016 elections and other
+
+### Bi-gram Analysis
 
 ```{r}
 #bigram tokenization and analysis
@@ -445,6 +458,8 @@ ggraph(bigram_igraph, layout = "fr") +
 ```
 
 Arrows represent directional relationships between pairs of words, and distance is irrelevant.
+
+### Sentiment Analysis
 
 ```{r}
 #sentiment analysis
@@ -579,9 +594,35 @@ nrc_wc <- nrc_posneg %>%
  
 grid.arrange(bing_wc, nrc_wc)
 
+tf_idf_sentiment <- tweet_words %>% 
+  bind_tf_idf(word, account_category,n) %>%
+  inner_join(get_sentiments("nrc"), relationship = "many-to-many")%>%
+   filter(!sentiment == "positive",
+         !sentiment == "negative",
+         !word == "trump",)
+  
+
+
+tf_idf_sentiment %>%
+  filter(!account_category == "HashtagGamer", #just returned random hashtags
+         !account_category == "Commercial", #returned ads
+         sentiment %in% c("anger", "disgust", "fear", "sadness", "trust"))%>% 
+  group_by(account_category)%>%
+  slice_max(tf_idf, n = 10) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(word,tf_idf), fill = sentiment))+
+  geom_col(show.legend = F)+
+  facet_wrap(~sentiment , ncol = 2, scales = "free")+
+  theme_bw()+
+  labs(x = "tf-idf",
+       y = NULL,
+       title = "High tf-idf words by sentiment")+
+  scale_fill_paletteer_d("ButterflyColors::parides_zacynthus_polymetus")
 ```
 
-We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated throguh LDA into topics, which retuns us a model for how likely each word is to come out each topic.
+### LDA Modelling
+
+We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which retunrs us a model for how likely each word is to come out each topic.
 
 First we have to train the model, so we're going to divide the tweets into training and testing data with an 80/20 split.
 
@@ -602,7 +643,7 @@ dtm_test <- Tweets_Test %>%
   cast_dtm(Tweet_n, word, n)
 ```
 
-We then run the model for different numbers of topic, and evaluate its accuracy (wich is measured by the model's perplexity). We toggle this codeblock's execution off because it takes a long time to run, but the model is most accurate with 25 topics.
+We then run the model for different numbers of topic, and evaluate its accuracy (which is measured by the model's perplexity). We toggle this codeblock's execution off because it takes a long time to run, but the model is most accurate with 25 topics.
 
 It's worth noting that perplexity remains high, but that's to be expected: even in human interpretation it's recognised that Tweets, by their very nature, are often ambiguous. Astroturf-related tweets, which by their own objective try to be even more ambiguous, are bound to share that quality.
 
@@ -622,7 +663,7 @@ It's worth noting that perplexity remains high, but that's to be expected: even 
 # 25 is chosen as the optimal number of topics
 ```
 
-That being said, we can cleraly observe patterns of topic forming within the model
+That being said, we can clearly observe patterns of topic forming within the model
 
 ```{r}
 #LDA model (may take a few minutes)
@@ -691,3 +732,7 @@ nrc_LDAtrain %>%
 ```
 
 We can observe that topic Trump is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
+
+## Conclusion
+
+### Future Research
