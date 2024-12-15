@@ -578,6 +578,10 @@ grid.arrange(bing_wc, nrc_wc)
 
 ```
 
+We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated throguh LDA into topics, which retuns us a model for how likely each word is to come out each topic. 
+
+First we have to train the model, so we're going to divide the tweets into training and testing data with an 80/20 split.
+
 ```{r}
 #data-term matrix
 
@@ -585,20 +589,30 @@ set.seed(505)
 Tweets_Partition <- createDataPartition(Tweets_unnested$Tweet_n,p=0.8,list=FALSE)
 Tweets_Train <- Tweets_unnested[Tweets_Partition,] #train data, 80%
 Tweets_Test <-  Tweets_unnested[-Tweets_Partition,] #Test data, 20%
+```
+
+We then run the model for different numbers of topic, and evaluate its accuracy (wich is measured by the model's perplexity).
+We toggle this codeblock's execution off because it takes a long time to run, but the model is most accurate with 25 topics.
+
+It's worth noting that perplexity remains high, but that's to be expected: even in human interpretation it's recognised that Tweets, by their very nature, are often ambiguous. Astroturf-related tweets, which by their own objective try to be even more ambiguous, are bound to share that quality.
+
+```{r}
+#| execute: false
 
 #find the correct number of topics 
-#THIS IS COMMENTED SINCE IT TAKES 1+ HOURS ON MY 6-CORE PC, THE PLOT IS ATTACHED
-# updog <- FindTopicsNumber(
-#   IRAcast_train,
-#   topics = seq(from = 2, to = 60, by = 1),
-#   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010"),
-#   method = "Gibbs",
-#   mc.cores = 4L,
-#   verbose = TRUE)
-# 
-# FindTopicsNumber_plot(updog)
+ updog <- FindTopicsNumber(
+   IRAcast_train,
+   topics = seq(from = 2, to = 60, by = 1),
+   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010"),
+   method = "Gibbs",
+   mc.cores = 4L,
+   verbose = TRUE)
+ 
+ FindTopicsNumber_plot(updog)
 # 25 is chosen as the optimal number of topics
-
+```
+That being said, we can cleraly observe patterns of topic forming within the model
+```{r}
 #LDA model (may take a few minutes)
 trainLDA <- LDA(dtm_train, k = 25, method = "Gibbs") #"k = " for topics
 trainLDAtidy_terms <- tidy(trainLDA, matrix = "beta")
@@ -635,6 +649,9 @@ trainLDAtidy_docs #share of words from that document generated from that topic
 perplexity(trainLDA, dtm_train, estimate_theta = F)
 perplexity(trainLDA, dtm_test, estimate_theta = T )
 ```
+We can observe several clear topic being distinguished, some of which along political lines, like the Obama presidency, Hillary Clinton and Donald Trump. Some of which along cultural topics, like workouts or sports.
+
+We then evaluate sentiment by topic
 
 ```{r}
 #sentiment by topic
@@ -659,3 +676,5 @@ nrc_LDAtrain %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
   paletteer::scale_fill_paletteer_c("ggthemes::Sunset-Sunrise Diverging")
 ```
+
+We can observe that topic Trump is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
