@@ -402,9 +402,13 @@ tweet_tf_idf %>%
   
 ```
 
-The high tf-idf words, plot by account category, highlights common words to the 2016 elections and other
+The high tf-idf words, plot by account category, highlight common topics to the 2016 elections and other high impact words (some of which were previously hashtags, but were included to not forego any information) like "islam kills", "black skin is not a crime", "food poisoning", and "stay woke".
 
 ### Bi-gram Analysis
+
+Tokenization isn't only possible at the singular worlds level, we can tokenize according to "n-grams", which are series of n words.
+
+We decided to focus on Bigrams, series of 2 words, and repeat some of the previous text analysis.
 
 ```{r}
 #bigram tokenization and analysis
@@ -452,7 +456,7 @@ ggraph(bigram_igraph, layout = "fr") +
                  arrow = arrow, end_cap = circle(.07, 'inches'))+
   geom_node_point(color = "lightgreen", size = 5) +
   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
-  labs(title = "All combinations of words in bigrams")+
+  labs(title = "Combinations of words in bigrams")+
   theme_void()
 
 ```
