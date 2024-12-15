@@ -1,6 +1,6 @@
 ---
 title: "Parallel Worlds"
-author: "Francesco Prem Solidoro, Michele Salvi"
+author: "Francesco Prem Solidoro[,](https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUYbmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXAg) Michele Salvi"
 format:
   typst:
     toc: true
@@ -11,6 +11,7 @@ format:
 execute:
   warning: false
   cache: true
+  echo: false
 editor: visual
 ---
 
@@ -465,6 +466,10 @@ Arrows represent directional relationships between pairs of words, and distance 
 
 ### Sentiment Analysis
 
+This block filters out the word "trump" (to avoid misinterpretation in sentiment analysis) and
+joins the dataset with the NRC sentiment lexicon to classify words into sentiment categories.
+The result is a dataset of words with assigned sentiments.
+
 ```{r}
 #sentiment analysis
 #sentiment lexicons must be installed 
@@ -531,7 +536,11 @@ bing_tweets %>%
   theme_bw()+
   paletteer::scale_fill_paletteer_d("ggprism::colorblind_safe")+
   labs(x = "Tweets (hundreds)",y = "Score", title = "Positivity / Negativity by hundreds of tweets")
+```
 
+Now we compare the 3 lexicons.
+
+```{r}
 #Comparing the 3 lexicons
 afinn_tweets <- Tweets_unnested %>%
    filter(!word == "trump",
@@ -624,14 +633,18 @@ tf_idf_sentiment %>%
   scale_fill_paletteer_d("ButterflyColors::parides_zacynthus_polymetus")
 ```
 
+We can observe that NRC is more positive than the other lexicons, even after correcting the issue with Trump being interpreted as a word of "surprise".
+
 ### LDA Modelling
 
 We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which retunrs us a model for how likely each word is to come out each topic.
 
+We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated throguh LDA into topics, which retuns us a model for how likely each word is to come out each topic.
+
 First we have to train the model, so we're going to divide the tweets into training and testing data with an 80/20 split.
 
 ```{r}
-#data-term matrix
+# Data-term matrix
 
 set.seed(505)
 Tweets_Partition <- createDataPartition(Tweets_unnested$Tweet_n,p=0.8,list=FALSE)
