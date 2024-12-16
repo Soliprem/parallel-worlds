@@ -335,7 +335,7 @@ As it can be observed, tweets steadily increased until a few days after the elec
 
 We began our analysis by focusing on the tweet's text. In this type of "word" centered approach we filtered the tweets to contain only English tweets, removing links and "stop words" (words such as the,a , by...) that would just hinder the process.
 
-We then tokenized the tweets by words, that is splitting each word in the content while homogenizing the text
+We then tokenized the tweets by words, by splitting each word in the content while homogenizing the text.
 
 ```{r}
 #text analysis
