@@ -441,7 +441,7 @@ bigrams_united <-  bigrams_filter %>%
 
 ```
 
-This gives us additional context on the most common words, like "world news" and "donald trump"
+This gives us additional context on the most common words, like "world news" and "Donald Trump"
 
 We can also repeat the tf_idf analysis with bigrams to capture additional context that might have been discarded by single-word analysis.
 
@@ -804,9 +804,9 @@ It's opportune to verify the hypothesis that astroturf operations such as this o
 
 ### New data
 
-It'd be interesting to observe the evolution of astroturf given the recent developments in generative technology. To do so, we'd need to access new, large amounts of data. This cna't cheaply be done off of Twitter (now X), so we hope to do so through fediverse or bluseky (or AT-based) platforms.
+It'd be interesting to observe the evolution of astroturf given the recent developments in generative technology. To do so, we'd need to access new, large amounts of data. This can't cheaply be done off of Twitter (now X), so we hope to do so through fediverse or bluseky (or AT-based) platforms.
 
-With this new data, we could then run a similar kind of analysis to observe if the patterns we found in 2016 remain and fully develop a recognisation model. At the same time, we could better develop a model using the help of network analysis: shoudl our hypothesis about polarization hold, increases in network polarization would be possible markers of astroturf campaigns, and therefore "hot spots" to analyse.
+With this new data, we could then run a similar kind of analysis to observe if the patterns we found in 2016 remain and fully develop a recognition model. At the same time, we could better develop a model using the help of network analysis: should our hypothesis about polarization hold, increases in network polarization would be possible markers of astroturf campaigns, and therefore "hot spots" to analyse.
 
 ### LDA opportunities
 
