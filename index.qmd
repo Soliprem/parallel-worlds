@@ -48,7 +48,7 @@ In our pursuit of understanding how parallel worlds are built, we have to unders
 
 -   is it possible to generalize and model an astroturfing from the words used?
 
-    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC@NRC, Bing@BING and AFINN@AFINN lexicons, and the aid of LDA, latent dirichlet allocation, to model the topics discussed in the tweets.
+    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC, Bing and AFINN lexicons, and the aid of LDA, latent dirichlet allocation, to model the topics discussed in the tweets.
 
 ```{r}
 library(tidyverse)
@@ -209,7 +209,7 @@ To represent well the most significant regions (United states, Unknown) we categ
 describe(IRAtweets$followers)
 describe(IRAtweets$following)
 
-mean(IRAtweets$retweet)
+# mean(IRAtweets$retweet)
 
 IRAtweets %>%
   group_by(account_category) %>%
@@ -380,11 +380,11 @@ tweet_tf_idf <- tweet_words %>%
 
 # thus tf = term frequency, so idf / tf-idf = 0 for extremely common words, and increasing for the rarity of the terms
 
-tweet_tf_idf %>%
-  filter(!account_category == "HashtagGamer", #just returned random hashtags
-         !account_category == "Commercial")%>% #just returned ads
-  select(-tot)%>%
-  arrange(desc(tf_idf))
+# tweet_tf_idf %>%
+#   filter(!account_category == "HashtagGamer", #just returned random hashtags
+#          !account_category == "Commercial")%>% #just returned ads
+#   select(-tot)%>%
+#   arrange(desc(tf_idf))
 
 tweet_tf_idf %>%
   filter(!account_category == "HashtagGamer", #just returned random hashtags
@@ -596,12 +596,12 @@ bing_nrc_tweets <- bind_rows(bing_tweets ,nrc_posneg)%>%
    labs(x = "Tweets (thousands)",y = "Score", title = "Comparing different lexicons")
 
 #NRC is notoriously known as a more positive lexicon than others 
- get_sentiments("nrc") %>% 
-  filter(sentiment %in% c("positive", "negative")) %>% 
-  count(sentiment)
- 
- get_sentiments("bing") %>% 
-  count(sentiment)
+ # get_sentiments("nrc") %>% 
+ #  filter(sentiment %in% c("positive", "negative")) %>% 
+ #  count(sentiment)
+ # 
+ # get_sentiments("bing") %>% 
+ #  count(sentiment)
 #NRC has a higher ratio of positive words
  
 bing_wc <- bing_tweets %>%
@@ -745,7 +745,7 @@ termstrain_wide #probability of the top 10 words appearing in topic
 
 #per-document word probabilities
 trainLDAtidy_docs <- tidy(trainLDA, matrix = "gamma")
-trainLDAtidy_docs #share of words from that document generated from that topic
+#trainLDAtidy_docs #share of words from that document generated from that topic
 
 #model evaluation
 perplexity(trainLDA, dtm_train, estimate_theta = F)
