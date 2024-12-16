@@ -126,3 +126,8 @@ tidytext:
     type: web
     url: "https://www.tidytextmining.com/"
     title: Text Mining with R
+
+NRC:
+  type: web
+  url: "Resolve DOI: https://doi.org/10.4224/21270984"
+  title: "NRC lexicon"
