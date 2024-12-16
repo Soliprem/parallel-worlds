@@ -129,5 +129,10 @@ tidytext:
 
 NRC:
   type: web
-  url: "Resolve DOI: https://doi.org/10.4224/21270984"
+  url: "https://doi.org/10.4224/21270984"
   title: "NRC lexicon"
+
+AFINN:
+  type: web
+  url: "https://arxiv.org/abs/1103.2903"
+  title: "AFINN lexicon"
