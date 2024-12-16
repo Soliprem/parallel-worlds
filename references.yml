@@ -136,3 +136,8 @@ AFINN:
   type: web
   url: "https://arxiv.org/abs/1103.2903"
   title: "AFINN lexicon"
+
+BING:
+  type: article
+  url: "https://dl.acm.org/doi/10.1145/1014052.1014073"
+  title: "Mining and summarizing customer reviews"
