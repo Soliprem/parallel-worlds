@@ -48,7 +48,7 @@ In our pursuit of understanding how parallel worlds are built, we have to unders
 
 -   is it possible to generalize and model an astroturfing from the words used?
 
-    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC@NRC, Bing and AFINN@AFINN lexicons, and the aid of LDA, latent dirichlet allocation, to model the topics discussed in the tweets.
+    To understand this, we will be conducting a sentiment analysis over the datasets of IRA-affiliated tweets utilizing text mining practices such as word frequencies, tf-idf, sentiment analysis through the NRC@NRC, Bing@BING and AFINN@AFINN lexicons, and the aid of LDA, latent dirichlet allocation, to model the topics discussed in the tweets.
 
 ```{r}
 library(tidyverse)
