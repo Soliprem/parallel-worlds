@@ -675,7 +675,7 @@ We can observe that NRC is more positive than the other lexicons, even after cor
 
 ### LDA Modelling
 
-We proceed to use LDA analysis \@<https://dl.acm.org/doi/10.5555/944919.944937> to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
+We proceed to use LDA analysis @LDA to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
 We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 

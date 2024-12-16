@@ -141,3 +141,9 @@ BING:
   type: article
   url: "https://dl.acm.org/doi/10.1145/1014052.1014073"
   title: "Mining and summarizing customer reviews"
+
+LDA:
+  type: article
+  url: "https://dl.acm.org/doi/10.5555/944919.944937"
+  author: ["David M. Blei", "Andrew Y. Ng", "Micheal I. Jordan"]
+  title: "Latent dirichlet allocation"
