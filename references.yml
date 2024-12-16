@@ -1,0 +1,128 @@
+rise:
+    type: Article
+    title: The rise of social media
+    author: ["Esteban Ortiz-Ospina"]
+    url: "https://ourworldindata.org/rise-of-social-media"
+  
+pol-def:
+    type: Web
+    title: Merriam-Webster
+    url: "https://www.merriam-webster.com/dictionary/polarization"
+
+pol-hist:
+    type: Article
+    author: ["Jacob, Jensen", "Suresh,Naidu","Ethan, Kaplan","Laurence, Wilse-Samson"]
+    title: Political Polarization and the Dynamics of Political Language Evidence from 130 Years of Partisan Speech
+    url: "https://www.columbia.edu/~lhw2110/2012b_Jensen.pdf"
+
+astro-def:
+    type: Web
+    title: Merriam-Webster
+    url: "https://www.merriam-webster.com/dictionary/astroturfing"
+
+astro-sudkr:
+    type: Article
+    author: ["Franziska B. Keller","David Schoch","Sebastian Stier","JungHwan Yang"]
+    title: How to Manipulate Social Media Analyzing Political Astroturfing Using Ground Truth Data from South Korea
+    url: "https://www.researchgate.net/publication/317290047_How_to_Manipulate_Social_Media_Analyzing_Political_Astroturfing_Using_Ground_Truth_Data_from_South_Korea"
+
+astro-usa2016:
+    type: Article
+    author: ["Ahmed, Al-Rawi","Anis Rahman"]
+    title: Manufacturing Rage, The Russian Internet Research Agencys political astroturfing on social media
+    url: "https://firstmonday.org/ojs/index.php/fm/article/download/10801/9723?inline=1"
+
+astro-china:
+    type: Article
+    author: ["Gary, king","Jennifer, Pan","Margaret E ,Roberts"]
+    title: How the Chinese Government Fabricates Social Media Posts for Strategic Distraction, Not Engaged Argument
+    url: "https://www.cambridge.org/core/journals/american-political-science-review/article/how-the-chinese-government-fabricates-social-media-posts-for-strategic-distraction-not-engaged-argument/4662DB26E2685BAF1485F14369BD137C"
+    serial-number:
+      doi: https://doi.org/10.1017/S0003055417000144
+
+us-intelligence-IRA:
+    type: Article
+    author: ["Permanent Select Committe on Intelligence"]
+    title: Exposing Russia’s Effort to Sow Discord Online, The Internet Research Agency and Advertisements
+    url: "https://democrats-intelligence.house.gov/social-media-content/"
+
+
+astro-coordpatterns:
+    type: Article
+    author: ["David, Schoch","Franziska B. Keller","Sebastian, Stier","JungHwan, Yang"]
+    title: Coordination patterns reveal online political astroturfing across the world
+    url: "https://www.nature.com/articles/s41598-022-08404-9#Sec2"
+
+sentiment-commercial:
+    type: Article
+    author: ["Noora, Alallaq","Muhmmad Al-Khizaay","Mohammed Iqbal Dohan","Xin Han"]
+    title: Sentiment Analysis to Enhance Detection of Latent Astroturfing Groups in Online Social Networks
+    serial-number:
+      doi: http://dx.doi.org/10.1007/978-981-13-2907-4_7
+
+sentiment-def:
+    type: Web
+    title: Cambridge Dictionary
+    url: "https://dictionary.cambridge.org/dictionary/english/sentiment-analysis"
+
+mueller:
+    type: Report
+    author: ["Robert, Mueller"]
+    title: Report On The Investigation Into Russian Interference In The 2016 Presidential Election
+    url: "https://www.justice.gov/storage/report.pdf"
+
+
+wylie-testimony:
+    type: Report
+    author: ["Chris, Wylie"]
+    title: In the matter of Cambridge Analytica and other related issues
+    url: "https://www.judiciary.senate.gov/imo/media/doc/05-16-18%20Wylie%20Testimony.pdf"
+
+ftc-unfair:
+    type: Article
+    title: Guides Concerning the Use of Endorsements and Testimonials in Advertising
+    url: "https://www.ftc.gov/sites/default/files/attachments/press-releases/ftc-publishes-final-guides-governing-endorsements-testimonials/091005revisedendorsementguides.pdf"
+
+eu-unfair:
+    type: Article
+    title: Concerning unfair business-to-consumer commercial practices
+    url: "https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2005:149:0022:0039:EN:PDF"
+
+uva-astro:
+    type: Article
+    title: The Consequences of Astroturf Lobbying for Trust and Authenticity
+    author: ["Lock, I.", "Seele, P."]
+    serial-number:
+      doi: https://doi.org/10.22522/cmr20170121
+
+connecticut-lr:
+    type: Article
+    title: Artificial Grassroots Advocacy and the Constitutionality of Legislative Identification and Control Measures Note 
+    author: ["Jonathan C. Zellner"]
+    url: "https://digitalcommons.lib.uconn.edu/cgi/viewcontent.cgi?params=/context/law_review/article/1089/&path_info=17f3ef_af8d8acc496a46ca9271369a1d8f7a44.pdf"
+
+2007-lobby-law:
+    type: Article
+    title: H.R.2317 - Lobbying Transparency Act of 2007
+    url: "https://www.congress.gov/bill/110th-congress/house-bill/2317/text"
+
+tenet-inditment:
+    type: case
+    title: Two RT Employees Indicted for Covertly Funding and Directing U.S. Company that Published Thousands of Videos in Furtherance of Russian Interests
+    url: "https://www.justice.gov/opa/pr/two-rt-employees-indicted-covertly-funding-and-directing-us-company-published-thousands"
+    author: ["Department of Justice, USA"]
+
+election-issues-2024:
+    type: Article
+    url: "https://www.pewresearch.org/politics/2024/09/09/issues-and-the-2024-election/"
+    title: In tied presidential race, Harris and Trump have Contrasting Strenghts, weaknesses
+
+berlusconi-media-reach:
+    type: Article
+    url: "https://www.theguardian.com/media/2010/nov/08/silvio-berlusconi-media"
+    title: Silvio Berlusconi`s media reach
+
+tidytext:
+    type: web
+    url: "https://www.tidytextmining.com/"
+    title: Text Mining with R
