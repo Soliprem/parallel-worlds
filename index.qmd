@@ -1,6 +1,6 @@
 ---
 title: "Parallel Worlds"
-author: "Francesco Prem Solidoro[,](https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUYbmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXAg) Michele Salvi"
+author: "Francesco Prem Solidoro[,](https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUYbmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXAg) Matteo Liguori, Michele Salvi"
 format:
   typst:
     toc: true
@@ -11,7 +11,7 @@ format:
 execute:
   warning: false
   cache: true
-  echo: false
+  echo: true
 editor: visual
 ---
 
@@ -19,14 +19,14 @@ editor: visual
 
 -   Michele Salvi / michele.salvi4\@studio.unibo.it / 0001082457
 -   Francesco Prem Solidoro / francesco.solidoro\@studio.unibo.it / 0001071898
+-   Matteo Liguori / matteo.liguori2\@studio.unibo.it / 0001071940
 
 ## Abstract
 
-What is truth? It can be argued that truth is but the set of facts we intersubjectively agree to be correct as a society. In this view, while voices of specialists hold power sway, it's ultimately public opinion that shapes the shared ground over which political discourse and policy are built. It immediately becomes apparent that choosing one's terrain is a powerful tool in achieving one's objectives. To that end, it becomes essential to: 
+What is truth? It can be argued that truth is but the set of facts we intersubjectively agree to be correct as a society. In this view, while voices of specialists hold power sway, it's ultimately public opinion that shapes the shared ground over which political discourse and policy are built. It immediately becomes apparent that choosing one's terrain is a powerful tool in achieving one's objectives. To that end, it becomes essential to:
 
-- win over people to believe in your cause 
-- make sure people you won over don't leave for other causes. 
-
+-   win over people to believe in your cause
+-   make sure people you won over don't leave for other causes.
 
 In comes "Parallel Worlds".
 
@@ -673,11 +673,112 @@ tf_idf_sentiment %>%
 
 We can observe that NRC is more positive than the other lexicons, even after correcting the issue with Trump being interpreted as a word of "surprise".
 
+### Regression Analysis
+
+Before modelling with LDA, we try to gauge information with a simpler regression model.
+
+The first regression models Followers given sentiment in words, account category and followers.
+
+```{r}
+# alternative way to create dummies for regression, but the lm() function already does
+# Emotion <- factor(nrc_tweets$sentiment)
+# emo_reg <- nrc_tweets %>%
+#   mutate(dums = model.matrix(~Emotion))
+
+
+#Modelling followers given other variables
+  
+lm1 <- lm(followers ~ sentiment + account_category + following , data = nrc_tweets)
+lm1_summ <- summary(lm1)
+mean(lm1_summ$residuals^2)
+#MSE very large
+lm1_summ
+```
+
+In this case we observe that the factor most responsible in predicting followers is accounts of the "NewsFeed" category, boasting an increase in followers, ceteris paribus, of 5.606 x10\^3. Still, this is associated with a MSE of \~43M.
+
+Noting the high p-value of the anticipation sentiment and fearmonger category, we ran an additional regression removing those variables.
+
+```{r}
+nrc_adjust <-nrc_tweets  %>% 
+  filter(!sentiment == "anticipation",
+         !account_category == "Fearmonger")
+
+# model removing low significance variables
+lm1_adj <- lm(followers ~ sentiment + account_category + following , data = nrc_adjust)
+lm1adj_summ <- summary(lm1_adj)
+lm1adj_summ
+mean(lm1adj_summ$residuals^2)
+
+#So MSE increases by removing "anticipation" and "fearmonger"
+```
+
+With this change in the regressors we observe slightly different estimates for most of the regressors, (excluding following), the MSE rose from \~43M to \~45M, while the R\^2 stays essentially the same.
+
+We then tried modelling an additional regression that predicts Interactions (updates) given followers, sentiments, account category and following.
+
+```{r}
+#Modelling interactions (updates) given other variables
+lm2 <- lm(updates ~ followers + sentiment + account_category + following , data = nrc_tweets)
+
+lm2_summ <- summary(lm2)
+lm2_summ
+mean(lm2_summ$residuals^2)
+```
+
+This regression has a very high variance (and low R\^2) and high MSE (\~384M), which tells us that this kind of regression dosen't posess a significant predictive power and explains only a small part of the variance.
+
+Since most of the sentiments have a very low significance we tried to understand the differences by gradually excluding the sentiments with the lowest significance.
+
+```{r}
+#differences of including sentiments in interaction regression
+lm5 <-  lm(updates ~ followers + sentiment + account_category + following, data = nrc_tweets)
+lm5_summ <- summary(lm5)
+
+
+nrc_nofear <- nrc_tweets %>%
+  filter(!sentiment == "fear")
+
+lm6 <-  lm(updates ~ followers + sentiment + account_category + following, data = nrc_nofear)
+lm6_summ <- summary(lm6)
+
+
+nrc_nofearsurp <- nrc_tweets %>%
+  filter(!sentiment == "fear",
+         !sentiment == "surprise")
+
+lm7 <-  lm(updates ~ followers + sentiment + account_category + following, data = nrc_nofearsurp)
+lm7_summ <- summary(lm7)
+
+
+nrc_nofst <- nrc_tweets %>%
+  filter(!sentiment == "fear",
+         !sentiment == "surprise",
+         !sentiment == "trust")
+
+lm8 <-  lm(updates ~ followers + sentiment + account_category + following, data = nrc_nofst)
+lm8_summ <- summary(lm8)
+
+#so, taking into account MSE, it's  better to select a model that contains all variables + additional regressors
+
+lm5_summ
+mean(lm5_summ$residuals^2)
+
+lm6_summ
+mean(lm6_summ$residuals^2)
+
+lm7_summ
+mean(lm7_summ$residuals^2)
+
+lm8_summ
+mean(lm8_summ$residuals^2)
+```
+
+But, as it's clearly observed, as we removed sentiments with the lowest significance from the regression, the R\^2 lowered while the MSE rose, while the estimates were almost stable.
+
 ### LDA Modelling
 
 We proceed to use LDA analysis @LDA to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
-
-We proceed to use LDA analysis to create a model that splits the tweets we found into topic. We take each tweet as a document and its text as a corpus. The tweets are then aggregated through LDA into topics, which returns us a model for how likely each word is to come out each topic.
 
 First we have to train the model, so we're going to divide the tweets into training and testing data with an 80/20 split.
 
@@ -792,7 +893,7 @@ nrc_LDAtrain %>%
 
 ![](plots/IRA_LDASent25.png)
 
-We can observe that topic Trump is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
+We can observe that topic Trump (19) is correlated with high feelings of trust, hope. This is in stark contrast with the feelings around other political candidates. This is far and away the strongest visible pattern of this analysis, showing clearly the intent behind the operation: through subtle and hard-to-detect political messaging, to associate Trump with hope for the future and positivity, and his opposition with negativity.
 
 Additionally high values of trust and fear oriented words can be observed around multiple topics, but generally fear, trust and anger are the most shared sentiments.
 
@@ -812,9 +913,9 @@ It's opportune to verify the hypothesis that astroturf operations such as this o
 
 ### New data
 
-It'd be interesting to observe the evolution of astroturf given the recent developments in generative technology. To do so, we'd need to access new, large amounts of data. This cna't cheaply be done off of Twitter (now X), so we hope to do so through fediverse or bluseky (or AT-based) platforms.
+It'd be interesting to observe the evolution of astroturf given the recent developments in generative technology. To do so, we'd need to access new, large amounts of data. This can't cheaply be done off of Twitter (now X), so we hope to do so through fediverse or bluseky (or AT-based) platforms.
 
-With this new data, we could then run a similar kind of analysis to observe if the patterns we found in 2016 remain and fully develop a recognisation model. At the same time, we could better develop a model using the help of network analysis: shoudl our hypothesis about polarization hold, increases in network polarization would be possible markers of astroturf campaigns, and therefore "hot spots" to analyse.
+With this new data, we could then run a similar kind of analysis to observe if the patterns we found in 2016 remain and fully develop a recognisation model. At the same time, we could better develop a model using the help of network analysis: should our hypothesis about polarization hold, increases in network polarization would be possible markers of astroturf campaigns, and therefore "hot spots" to analyse.
 
 ### LDA opportunities
 
