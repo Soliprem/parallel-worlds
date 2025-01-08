@@ -75,6 +75,8 @@ library(caret)
 library(textclean)
 library(igraph)
 library(ggraph)
+library(fastDummies)
+library(ggfortify)
 ```
 
 ### Downloading, Importing, merging and cleaning the dataset
@@ -775,6 +777,66 @@ mean(lm8_summ$residuals^2)
 ```
 
 But, as it's clearly observed, as we removed sentiments with the lowest significance from the regression, the R\^2 lowered while the MSE rose, while the estimates were almost stable.
+
+To obtain more results on the first regression we conducted variable selection via the stepwise backward selection algorithm.
+
+```{r}
+# making  categorical variable dummies
+
+  tweets_dummies <- nrc_tweets %>%
+    select(c(followers,following,sentiment,account_category)) %>%
+    dummy_cols(select_columns = c("sentiment","account_category"), remove_selected_columns = T)
+
+lm1_tot <- lm(followers ~ . , data = tweets_dummies)
+lm1_tot_step <- lm1_tot %>%
+  step()
+
+lm1_tot_step_summ <- summary(lm1_tot_step)
+lm1_tot_step_summ
+mean(lm1_tot_step_summ$residuals^2)
+```
+
+The algorithm has set the best performing selection automatically, and we observed an identical R\^2 and a slightly higher MSE, but with different estimates that suggest even more the importance of being a "Newsfeed" account.
+
+To further inspect the validity of the regression we run different diagnostic plots:
+
+-   Residuals vs Fitted, checking if residuals are randomly scattered around 0
+-   Normal Q-Q, checking if residuals follow a normal distribution
+-   Scale - Location, checking if residual variance is constant across predicted values
+-   Residuals vs Leverage, identifying points that have a disproportionate impact on the model
+
+```{r}
+lm1_tot_step|>
+autoplot()
+```
+
+To attempt to account for the mistakes highlighted by the diagnostic plots we computed the regression again, but with logarithmic "followers" and "following". Since some accounts have 0 followers / following, a logarithmic transformation is possible only by excluding them.
+
+```{r}
+
+tweets_dummies_adj <- tweets_dummies %>%
+  filter(!following == 0,
+         !followers == 0)
+
+lm1_tot_log <- lm(log(followers) ~ log(following) + . , data = tweets_dummies_adj)
+
+lm1_tot_log_step <- lm1_tot_log %>%
+  step()
+
+lm1_log_summ <- summary(lm1_tot_log_step)
+lm1_log_summ
+mean(lm1_tot_step_summ$residuals^2)
+
+```
+
+By applying the logarithmic transformations the R\^2 improved considerably, despite the MSE staying the same, then we again ran the same diagnostic plots for this updated regression.
+
+```{r}
+lm1_tot_log_step|>
+autoplot()
+```
+
+This improved regression has the best performing R\^2 (0.8), and unexpectedly identifies the "Commercial" account category as the most successful in follower count, as opposed to the "Newsfeed" category, that the last regressions indicated.
 
 ### LDA Modelling
 
