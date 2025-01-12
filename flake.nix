@@ -13,6 +13,47 @@
     flake-utils.lib.eachDefaultSystem (system: let
       inherit (self) outputs;
       pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
+
+      # Create an R script for checking and installing lexicons
+      # Create an R script for checking and installing lexicons
+      checkLexicons = pkgs.writeTextFile {
+        name = "check-lexicons.R";
+        text = ''
+          check_and_install_lexicons <- function() {
+          cat("checking if lexicons are installed...\n")
+            library(textdata)
+
+            # Function to safely check if lexicon exists
+            has_lexicon <- function(name) {
+              tryCatch({
+                tidytext::get_sentiments(name)
+                TRUE
+              }, error = function(e) FALSE)
+            }
+
+            # Check each lexicon
+            lexicons <- c("afinn", "bing", "nrc")
+            missing <- Filter(function(x) !has_lexicon(x), lexicons)
+
+            if (length(missing) > 0) {
+              cat("\nInstall the missing sentiment lexicons:\n")
+              for (lex in missing) {
+                cat("- ", lex, "\n")
+              }
+              cat("\nRun R, and then within it run:\n")
+              cat("\nlibrary(tidytext)\n")
+              for (lex in missing) {
+              cat(sprintf('get_sentiments("%s")\n', lex))
+              }
+            } else {
+              cat("\nAll sentiment lexicons are already installed.\n")
+            }
+          }
+
+          # Run the check and install function
+          check_and_install_lexicons()
+        '';
+      };
     in {
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
@@ -22,6 +63,8 @@
           rPackages.tidytext
           rPackages.textdata
           rPackages.tm
+          rPackages.fastDummies
+          rPackages.ggfortify
           rPackages.gridExtra
           rPackages.textclean
           rPackages.rmarkdown
@@ -39,7 +82,7 @@
           quarto
         ];
         shellHook = ''
-          nu
+          nu -e "Rscript ${checkLexicons}"
         '';
       };
     });
