@@ -49,6 +49,8 @@ R libraries:
 - `tidytext`
 - `textdata`
 - `tm`
+- `fastDummies`
+- `ggfortify`
 - `gridExtra`
 - `textclean`
 - `rmarkdown`
