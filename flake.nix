@@ -45,6 +45,7 @@
               for (lex in missing) {
               cat(sprintf('get_sentiments("%s")\n', lex))
               }
+              cat('quit("yes")')
             } else {
               cat("\nAll sentiment lexicons are already installed.\n")
             }
